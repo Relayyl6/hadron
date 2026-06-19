@@ -15,6 +15,9 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "strict": true,
+    "paths": {
+      "@packages/*": ["./packages/*"]
+    },
     "target": "es2022",
     "customConditions": ["@hadron/source"]
   }

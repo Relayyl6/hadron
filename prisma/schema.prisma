@@ -1,13 +1,98 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum BusinessType {
+  RETAIL
+  SERVICES
+  REGISTERED_COMPANY
+  // add more as needed — these should mirror whatever string values your client sends
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  PREFER_NOT_TO_SAY
+}
+
+model images {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  file_id String
+  url     String
+  userId  String? @unique @db.ObjectId
+  users   users?  @relation(fields: [userId], references: [id])
+}
+
+model users {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String  @unique
+  password String
+  role     Role
+
+  following String[]
+  avatar    images?
+
+  sellerProfile   SellerProfile?
+  customerProfile CustomerProfile?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+type Address {
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String?
+}
+
+type Preferences {
+  currency          String?
+  language          String?
+  marketingConsent  Boolean?
+  pushNotifications Boolean?
+}
+
+type PayoutBankDetails {
+  bankName      String
+  accountNumber String
+  accountName   String
+}
+
+model CustomerProfile {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber String?
+  dateOfBirth String?
+  gender      Gender?
+  preferences Preferences?
+  address     Address?
+
+  userId String @unique @db.ObjectId
+  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SellerProfile {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  businessName      String
+  businessType      BusinessType
+  taxId             String?
+  storeDescription  String?
+  payoutBankDetails PayoutBankDetails?
+  isVerified        Boolean            @default(false)
+
+  userId String @unique @db.ObjectId
+  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

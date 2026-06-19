@@ -16,11 +16,15 @@
           "format": [
             "cjs"
           ],
-          "bundle": false,
+          "bundle": true,
           "main": "apps/auth-service/src/main.ts",
           "tsConfig": "apps/auth-service/tsconfig.app.json",
           "assets": [
-            "apps/auth-service/src/assets"
+            {
+              "glob": "**/*",
+              "input": "apps/auth-service/src/assets",
+              "output": "assets"
+            }
           ],
           "esbuildOptions": {
             "sourcemap": true,

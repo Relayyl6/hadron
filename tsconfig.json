@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "files": [],
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
   },
   "references": [
     {
