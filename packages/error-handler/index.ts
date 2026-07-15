@@ -8,8 +8,8 @@ export class AppError extends Error {
 
     constructor(
         message: string, 
-        statusCode: number = 500, 
-        isOperational: boolean = true, 
+        statusCode = 500, 
+        isOperational = true, 
         details?: ErrorDetails
     ) {
         super(message);
@@ -93,5 +93,19 @@ export class DatabaseError extends AppError {
         // Warning: Be careful passing raw DB 'details' to the client in production
         // to prevent leaking schema information.
         super(message, 500, false, details); 
+    }
+}
+
+// 401 Invalid JWT (Malformed, invalid, or tampered token)
+export class JsonWebTokenError extends AppError {
+    constructor(message = "Invalid authentication token", details?: ErrorDetails) {
+        super(message, 401, true, details);
+    }
+}
+
+// 401 Expired JWT
+export class TokenExpiredError extends AppError {
+    constructor(message = "Authentication token has expired", details?: ErrorDetails) {
+        super(message, 401, true, details);
     }
 }

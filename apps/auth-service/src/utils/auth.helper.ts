@@ -1,55 +1,11 @@
 import crypto from 'crypto'
-import { ValidationError } from '../../../../packages/error-handler';
+import { RateLimitError, TokenExpiredError, ValidationError } from '../../../../packages/error-handler';
 import redis from '../../../../packages/lib/redis';
 import { sendEmail } from './sendMail';
 import { RegistrationPayload } from '../../types/types';
+import { prisma } from '../../../../packages/lib/prisma';
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-// 1. The generic fields EVERY user has
-
-// eg 
-// {
-//   "account": {
-//     "name": "Leonard Oseghale",
-//     "email": "leonard.test@example.com",
-//     "password": "SecurePassword123!",
-//     "role": "CUSTOMER"
-//   },
-//   "customerProfile": {
-//     "phoneNumber": "+2348012345678",
-//     "dateOfBirth": "1998-05-14",
-//     "gender": "MALE",
-//     "preferences": {
-//       "currency": "NGN",
-//       "language": "en",
-//       "marketingConsent": true,
-//       "pushNotifications": false
-//     },
-//     "address": {
-//       "street": "123 University Road",
-//       "city": "Benin City",
-//       "state": "Edo",
-//       "country": "Nigeria"
-//     }
-//   }
-// }
-
-// interface RegistrationPayload {
-//   name: string;
-//   email: string;
-//   password: string;
-//   role: string;
-//   phone_number?: string;
-//   country?: string;
-//   currency?: string;
-//   business_name?: string;
-//   business_type?: string;
-//   tax_id?: string;
-//   payout_bank_details?: string;
-//   marketing_consent?: boolean;
-//   preferences?: Record<string, any>;
-// }
 
 export const validateRegistrationData = (data: RegistrationPayload) => {
   if (!data.account?.email || !data.account?.password || !data.account?.name) {
@@ -60,14 +16,13 @@ export const validateRegistrationData = (data: RegistrationPayload) => {
     throw new ValidationError("Invalid email format");
   }
 
-  if (!["CUSTOMER", "SELLER", "ADMIN"].includes(data.account.role)) {
+  if (!["CUSTOMER", "SELLER", "ADMIN"].includes(data.role)) {
     throw new ValidationError("A valid role ('CUSTOMER', 'SELLER', or 'ADMIN') must be provided.");
   }
 
   if (data.role === "SELLER") {
     // ✅ TS now narrows `data` itself to the SELLER branch of the union
-    const { sellerProfile } = data; // safe — no error
-    const { account } = data;
+    const { account, sellerProfile } = data; // safe — no error
 
     if (!sellerProfile?.businessName || !sellerProfile?.businessType) {
       throw new ValidationError("Sellers must provide a business name and business type.");
@@ -121,13 +76,13 @@ export const checkOtpRestrictions = async (
   const ipRequests = await redis.get(`otp_ip_count:${ipAddress}`);
   if (ipRequests && parseInt(ipRequests) >= 20) { 
     // e.g., Max 20 OTP requests per IP per hour
-    throw new ValidationError("Too many requests from your network. Please try again later.");
+    throw new RateLimitError("Too many requests from your network. Please try again later.");
   }
 
   // Daily Hard Limit (Slow-Drip Spam Defense)
   const dailyRequests = await redis.get(`otp_daily_count:${email}`);
   if (dailyRequests && parseInt(dailyRequests) >= 5) {
-    throw new ValidationError("Daily OTP limit reached (Max 5 per day). Please try again tomorrow.");
+    throw new RateLimitError("Daily OTP limit reached (Max 5 per day). Please try again tomorrow.");
   }
 
   // The "Already Verified" State
@@ -230,3 +185,41 @@ export const suspendUserAccount = async (email: string) => {
 export const reinstateUserAccount = async (email: string) => {
   await redis.del(`account_suspended:${email}`);
 };
+
+// auth.helper.ts
+export const initiatePasswordReset = async (email: string, ipAddress: string) => {
+    const normalizedEmail = email.trim().toLowerCase()
+    
+    // 1. Check database
+    const user = await prisma.users.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+        return { success: true, message: "If an account exists, an OTP has been sent." };
+    }
+
+    // 2. Business logic (Rate limits)
+    await checkOtpRestrictions(normalizedEmail, ipAddress);
+    await trackOtpRequests(normalizedEmail);
+
+    // 3. Trigger side effect
+    await sendOtp(user.name, normalizedEmail, ipAddress, "forgot-password-user-mail");
+
+    return { success: true, message: "OTP sent to your email." };
+};
+
+export const verifyForgetPasswordOtp = async (email: string, otp: string) => {
+  const normalizedEmail = email.trim().toLowerCase()
+  
+  if (!normalizedEmail || !otp) {
+    throw new ValidationError("Email and OTP are required.");
+  }
+
+  const storedOtp = await redis.get(`otp:${normalizedEmail}`);
+  if (!storedOtp || storedOtp !== otp.toString()) {
+    throw new TokenExpiredError("Invalid or expired OTP.");
+  }
+
+    // Mark as verified so they can proceed to reset password
+  await markSessionAsVerified(normalizedEmail); 
+    
+  return { success: true };
+}

@@ -1,0 +1,211 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Auth Service API",
+    "description": "Auth Service API documentation",
+    "version": "1.0.0"
+  },
+  "host": "localhost:6001",
+  "basePath": "/",
+  "schemes": ["http"],
+  "paths": {
+    "/auth/user-registration": {
+      "post": {
+        "description": "Initiates registration. Validates payload, hashes the password, stores the pending user in Redis (10 min TTL), and emails an OTP. No DB write happens here.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/RegistrationPayload" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP sent to email. Registration pending verification." },
+          "400": { "description": "Validation error or user already exists." }
+        }
+      }
+    },
+    "/auth/verify-registration": {
+      "post": {
+        "description": "Verifies the OTP, retrieves the pending user from Redis, creates the user in the database, and logs them in by issuing access/refresh tokens.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/VerificationPayload" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "User registered, verified, and logged in successfully." },
+          "400": { "description": "Invalid/expired OTP or registration session expired." }
+        }
+      }
+    },
+    "/auth/login-user": {
+      "post": {
+        "description": "Authenticates a user with email and password, then issues access and refresh tokens.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/LoginPayload" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "User successfully logged in." },
+          "401": { "description": "Invalid email or password." }
+        }
+      }
+    },
+    "/auth/forget-password": {
+      "post": {
+        "description": "Initiates the password reset flow by sending an OTP to the user's email.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ForgetPasswordPayload" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP sent to email for password reset." },
+          "400": { "description": "Email is required or invalid." }
+        }
+      }
+    },
+    "/auth/verify-password-otp": {
+      "post": {
+        "description": "Verifies the OTP sent for a password reset request, prior to allowing a new password to be set.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/VerificationPayload" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP verified. You can now reset your password." },
+          "400": { "description": "Invalid or expired OTP." }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Sets a new password for the user. Should only be called after a successful /verify-password-otp step.",
+        "tags": ["Auth"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ResetPasswordPayload" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Password reset successfully." },
+          "400": { "description": "New password cannot match the old password, or user not found." }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "RegistrationPayload": {
+      "type": "object",
+      "properties": {
+        "role": { "type": "string", "enum": ["CUSTOMER", "SELLER"] },
+        "account": { "$ref": "#/definitions/Account" },
+        "customerProfile": { "$ref": "#/definitions/CustomerProfile" },
+        "sellerProfile": { "$ref": "#/definitions/SellerProfile" }
+      },
+      "description": "Payload for registration. When role is CUSTOMER, use customerProfile. When SELLER, use sellerProfile.",
+      "example": {
+        "description": "Example showing how to structure the request based on the selected role.",
+        "scenarios": [
+          {
+            "role": "CUSTOMER",
+            "account": { "name": "Leonard Oseghale", "email": "leonard.test@example.com", "password": "SecurePassword123!", "role": "CUSTOMER" },
+            "customerProfile": { "phoneNumber": "+2348012345678", "dateOfBirth": "1998-05-14", "gender": "MALE", "preferences": { "currency": "NGN", "language": "en", "marketingConsent": true, "pushNotifications": false }, "address": { "street": "123 University Road", "city": "Benin City", "state": "Edo", "country": "Nigeria", "postalCode": "300001" } }
+          },
+          {
+            "role": "SELLER",
+            "account": { "name": "Jane Doe", "email": "jane.seller@example.com", "password": "SellerPassword456!", "role": "SELLER" },
+            "sellerProfile": { "businessName": "Tech Haven Innovations", "businessType": "RETAIL", "taxId": "TIN-987654321", "storeDescription": "Premium gadgets.", "payoutBankDetails": { "bankName": "Zenith Bank", "accountNumber": "2001234567", "accountName": "Jane Doe Tech" } }
+          }
+        ]
+      }
+    },
+    "VerificationPayload": {
+      "type": "object",
+      "description": "Shared shape for any flow that closes out an OTP challenge — used by both registration verification and password-reset OTP verification.",
+      "required": ["email", "otp"],
+      "properties": {
+        "email": { "type": "string", "example": "leonard@example.com" },
+        "otp": { "type": "string", "example": "1234" }
+      }
+    },
+    "LoginPayload": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": { "type": "string", "example": "leonard@example.com" },
+        "password": { "type": "string", "example": "SecurePassword123!" }
+      }
+    },
+    "ForgetPasswordPayload": {
+      "type": "object",
+      "required": ["email"],
+      "properties": {
+        "email": { "type": "string", "example": "leonard@example.com" }
+      }
+    },
+    "ResetPasswordPayload": {
+      "type": "object",
+      "required": ["email", "newPassword"],
+      "properties": {
+        "email": { "type": "string", "example": "leonard@example.com" },
+        "newPassword": { "type": "string", "example": "NewSecurePassword456!" }
+      }
+    },
+    "Account": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "role": { "type": "string", "enum": ["CUSTOMER", "SELLER", "ADMIN"] }
+      }
+    },
+    "CustomerProfile": { "$ref": "#/definitions/CustomerProfileDetails" },
+    "CustomerProfileDetails": {
+      "type": "object",
+      "properties": {
+        "phoneNumber": { "type": "string" },
+        "dateOfBirth": { "type": "string", "format": "date" },
+        "gender": { "type": "string", "enum": ["MALE", "FEMALE", "PREFER_NOT_TO_SAY"] },
+        "preferences": { "type": "object" },
+        "address": { "type": "object" }
+      }
+    },
+    "SellerProfile": { "$ref": "#/definitions/SellerProfileDetails" },
+    "SellerProfileDetails": {
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string" },
+        "businessType": { "type": "string" },
+        "taxId": { "type": "string" },
+        "storeDescription": { "type": "string" },
+        "payoutBankDetails": { "type": "object" }
+      }
+    }
+  }
+}

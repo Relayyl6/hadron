@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "files": [],
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node"]
   },
   "references": [
     {
@@ -17,6 +17,9 @@
     },
     {
       "path": "./apps/api-gateway"
+    },
+    {
+      "path": "./apps/user-ui"
     }
   ]
 }

@@ -10,7 +10,7 @@
     "src/**/*.test.ts",
     "src/**/*.spec.ts",
     "src/**/*.d.ts"
-  ],
+, "types/express.d.ts"  ],
   "references": [
     {
       "path": "./tsconfig.app.json"
