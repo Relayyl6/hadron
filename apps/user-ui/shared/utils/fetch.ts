@@ -19,6 +19,7 @@ export async function apiRequest<T>(endpoint: string, { method = 'GET', body, he
         'Content-Type': 'application/json',
         ...headers,
       },
+      credentials: "include",
       ...options,
     };
 

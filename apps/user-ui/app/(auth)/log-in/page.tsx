@@ -28,7 +28,7 @@ import {
 } from '@/shared/utils/lib'
 
 export default function LoginPage() {
-  const { setUser } = useUser()
+  const { refetch } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('from') ?? '/'
@@ -96,8 +96,8 @@ export default function LoginPage() {
   // Step 0: Login Mutation Handler
   const loginMutation = useMutation({
     mutationFn: (values: LoginFormValues) => loginRequest(values.email, values.password),
-    onSuccess: (userProfile, values) => {
-      setUser(userProfile)
+    onSuccess: async (userProfile, values) => {
+      await refetch()
       if (values.rememberMe) {
         localStorage.setItem('hadron_remembered_email', userProfile.email)
       } else {

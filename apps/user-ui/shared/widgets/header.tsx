@@ -21,7 +21,7 @@ const Header = () => {
   const deptDropdownRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const { user, setUser } = useUser()
+  const { user, clearUser } = useUser()
 
 
   useEffect(() => {
@@ -136,7 +136,7 @@ const Header = () => {
             placeholder='Search for products...'
             className='w-48 rounded-md border border-gray-200 px-3 py-1.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
           />
-          <AccountMenu user={user} setUser={setUser} />
+          <AccountMenu user={user} onSignOut={clearUser} />
         </div>
 
         <div className='flex items-center gap-1 md:hidden'>
@@ -196,7 +196,7 @@ const Header = () => {
           ))}
         </nav>
         <div className='flex gap-2 border-t border-gray-100 p-3'>
-          <AccountMenu user={user} setUser={setUser} />
+          <AccountMenu user={user} onSignOut={clearUser} />
         </div>
       </div>
 

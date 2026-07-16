@@ -1,11 +1,5 @@
 import { DEPARTMENTS_DATA } from "./lib";
 
-export interface FlatCategory {
-  name: string;
-  href: string;
-  breadcrumbs: Array<{ name: string; href: string }>;
-}
-
 export const generateCategoryState = (data: typeof DEPARTMENTS_DATA) => {
   const lookup: Record<string, FlatCategory> = {};
 

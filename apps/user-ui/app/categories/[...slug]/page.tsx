@@ -3,10 +3,6 @@ import { DEPARTMENTS_DATA } from "@/shared/utils/lib";
 import { CATEGORY_STATE_MAP } from "@/shared/utils/tools";
 import { notFound } from "next/navigation";
 
-interface PageProps {
-  params: Promise<{ slug: string[] }>;
-}
-
 export async function generateStaticParams() {
   const paths: Array<{ slug: string[] }> = [];
 

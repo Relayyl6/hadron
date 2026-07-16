@@ -1,61 +1,50 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import axiosInstance from "../shared/utils/axiosInstance";
 
+const UserContext = createContext<UserContextValue | null>(null);
 
-export interface User {
-  id: string
-  name: string
-  email: string
-  avatarUrl: string | null
-}
-
-interface UserContextValue {
-  user: User | null
-  setUser: (user: User | null) => void
-  loading: boolean
-}
-
-const UserContext = createContext<UserContextValue | null>(null)
+const fetchUserData = async (): Promise<User> => {
+    const response = await axiosInstance.get(
+        "/api/users/auth/get_logged_in_user"
+    );
+    return response.data.user;
+};
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+    const queryClient = useQueryClient();
 
-  useEffect(() => {
-      const savedUser = localStorage.getItem('app_user');
+    const {
+        data: user,
+        isLoading,
+        isError,
+        refetch,
+    } = useQuery({
+        queryKey: ["user"],
+        queryFn: fetchUserData,
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
+    });
 
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser))
-        } catch (e) {
-          console.error("Error parsing user from localStorage", e)
-        } finally {
-          setLoading(false)
-        }
-      }
+    // call this on logout instead of clearing localStorage
+    const clearUser = () => {
+        queryClient.setQueryData(["user"], null);
+        queryClient.removeQueries({ queryKey: ["user"] });
+    };
 
-      setLoading(false)
-  }, [])
-
-  const handleSetUser = (newUser: User | null) => {
-    setUser(newUser)
-    if (newUser) {
-      localStorage.setItem('app_user', JSON.stringify(newUser))
-    } else {
-      localStorage.removeItem('app_user')
-    }
-  }
-
-  return (
-    <UserContext.Provider value={{ user, setUser: handleSetUser, loading }}>
-      {children}
-    </UserContext.Provider>
-  )
+    return (
+        <UserContext.Provider
+            value={{ user: user ?? null, isLoading, isError, refetch, clearUser }}
+        >
+            {children}
+        </UserContext.Provider>
+    );
 }
 
 export function useUser(): UserContextValue {
-  const ctx = useContext(UserContext)
-  if (!ctx) throw new Error('useUser must be used within a UserProvider')
-  return ctx
+    const ctx = useContext(UserContext);
+    if (!ctx) throw new Error("useUser must be used within a UserProvider");
+    return ctx;
 }

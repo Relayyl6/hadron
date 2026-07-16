@@ -47,3 +47,10 @@ export interface SellerProfilePayload {
 export type RegistrationPayload =
   | { role: "CUSTOMER"; account: AccountPayload; customerProfile: CustomerProfilePayload }
   | { role: "SELLER"; account: AccountPayload; sellerProfile: SellerProfilePayload };
+
+export interface AccessTokenPayload {
+    id: string;
+    role: "CUSTOMER" | "SELLER" | "ADMIN";
+    iat?: number;
+    exp?: number;
+}

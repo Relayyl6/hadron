@@ -5,18 +5,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { FaShoppingCart, FaHeart } from 'react-icons/fa'
-import { User } from '@/context/user-context'
 
-interface AccountMenuProps {
-  user: User | null
-  setUser: (u: User | null) => void
-}
-
-export default function AccountMenu({ user, setUser }: AccountMenuProps) {
+export default function AccountMenu({ user, isLoading, isError, refetch, onSignOut }: AccountMenuProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+  console.log(user)
 
   // Close on outside click — now safe because panelRef + btnRef belong
   // to THIS instance only, no cross-talk with any other AccountMenu.
@@ -61,6 +56,25 @@ export default function AccountMenu({ user, setUser }: AccountMenuProps) {
 
   const openMenu = () => setDropdownOpen(prev => !prev)
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-3">
+        <div className="h-8 w-8 animate-pulse rounded-full bg-gray-200" />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <button
+        onClick={() => refetch()}
+        className="rounded-md px-3 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+      >
+        Couldn't load account — retry
+      </button>
+    )
+  }
+
   if (!user) {
     return (
       <>
@@ -100,13 +114,13 @@ export default function AccountMenu({ user, setUser }: AccountMenuProps) {
     <div className='relative flex flex-row items-center justify-center gap-3'>
       <button
         ref={btnRef}
-        onClick={openMenu}
+        onClick={() => {openMenu(); }}
         className='flex h-8 w-8 items-center justify-center rounded-full bg-gray-900 text-xs font-medium text-white transition-opacity hover:opacity-80'
         aria-label='Open user menu'
         aria-expanded={dropdownOpen}
       >
-        {user.avatarUrl
-          ? <Image src={user.avatarUrl} alt={user.name} width={32} height={32} className='rounded-full object-cover' />
+        {user.avatar?.url
+          ? <Image src={user.avatar?.url} alt={user.name} width={32} height={32} className='rounded-full object-cover' />
           : <span>{initials}</span>}
       </button>
 
@@ -133,8 +147,8 @@ export default function AccountMenu({ user, setUser }: AccountMenuProps) {
         >
           <div className='flex items-center gap-3 px-3 py-2.5'>
             <div className='flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-medium text-white'>
-              {user.avatarUrl
-                ? <Image src={user.avatarUrl} alt={user.name} width={36} height={36} className='rounded-full object-cover' />
+              {user.avatar?.url
+                ? <Image src={user.avatar?.url} alt={user.name} width={36} height={36} className='rounded-full object-cover' />
                 : <span>{initials}</span>}
             </div>
             <div className='flex min-w-0 flex-col'>
@@ -143,8 +157,15 @@ export default function AccountMenu({ user, setUser }: AccountMenuProps) {
             </div>
           </div>
           <div className='my-1 border-t border-gray-100' />
+          <Link
+            href="/profile"
+            onClick={() => setDropdownOpen(false)}
+            className='block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900'
+          >
+            View profile
+          </Link>
           <button
-            onClick={() => { setUser(null); setDropdownOpen(false) }}
+            onClick={() => { onSignOut(); setDropdownOpen(false) }}
             className='w-full rounded-lg px-3 py-2 text-left text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900'
           >
             Sign out

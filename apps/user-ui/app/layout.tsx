@@ -31,8 +31,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${poppins.variable}`}>
-        <UserProvider>
-          <Providers>
+        <Providers>
+          <UserProvider>
             <Header />
             {children}
             <ToastContainer
@@ -46,9 +46,9 @@ export default function RootLayout({
               draggable
               pauseOnHover
               theme="light"
-            />
-          </Providers>
-        </UserProvider>
+            />  
+          </UserProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -8,13 +8,7 @@ import {
     DatabaseError,
     ForbiddenError,
 } from "../error-handler/index";
-
-interface AccessTokenPayload {
-    id: string;
-    role: "CUSTOMER" | "SELLER" | "ADMIN";
-    iat?: number;
-    exp?: number;
-}
+import { AccessTokenPayload } from "../../apps/auth-service/types/types";
 
 // ===============================
 // AUTHENTICATION MIDDLEWARE
@@ -64,13 +58,24 @@ export const authenticate = async (
 
         try {
             user = await prisma.users.findUnique({
-                where:{id: decoded.id},
-                select:{
-                    id:true,
-                    role:true
+                where: { id: decoded.id },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    following: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    avatar: {
+                        select: { id: true, url: true }
+                    },
+                    customerProfile: true,
+                    sellerProfile: true,
+                    // password intentionally omitted — never let this reach req.user
                 }
             });
-            
+
         } catch(error){
             throw new DatabaseError("Unable to verify user");
         }

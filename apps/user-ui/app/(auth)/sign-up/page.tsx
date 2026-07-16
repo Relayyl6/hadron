@@ -23,7 +23,7 @@ type Role = 'CUSTOMER' | 'SELLER'
 type SignUpFormValues = z.infer<typeof registrationSchema>
 
 export default function SignupPage() {
-  const { setUser } = useUser()
+  const { refetch } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('from') ?? '/'
@@ -157,14 +157,9 @@ export default function SignupPage() {
         body: { email: userEmail, otp },
       })
     },
-    onSuccess: (response) => {
-      setTimeout(() => {
-        setUser({
-          id: response.data.id,
-          name: response.data.name,
-          email: response.data.email,
-          avatarUrl: response.data.avatarUrl as string,
-        })
+    onSuccess: () => {
+      setTimeout(async () => {
+        await refetch()
         router.push(returnTo)
       }, 1500)
     },

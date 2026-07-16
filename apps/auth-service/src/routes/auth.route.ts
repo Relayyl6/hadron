@@ -14,10 +14,10 @@ authRouter.post("/verify-registration", verifyRegistrationOtp)
 authRouter.post("/login-user", userLogin)
 
 // generate and send a refresh user token
-authRouter.post("refresh_token", refrehsToken)
+authRouter.post("/refresh_token", refrehsToken)
 
 // get the currently logged in user 
-authRouter.get("get_logged_in_user", authenticate, getLoggedInUser)
+authRouter.get("/get_logged_in_user", authenticate, getLoggedInUser)
 
 // User forgot password
 authRouter.post("/forget-password", forgetPassword)

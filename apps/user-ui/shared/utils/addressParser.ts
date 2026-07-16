@@ -1,11 +1,3 @@
-export interface StructuredAddress {
-  street: string;
-  city: string;
-  state: string;
-  country: string;
-  postalCode?: string;
-}
-
 export function parseAddressString(rawAddress?: string): StructuredAddress {
   // Default values
   const defaults: StructuredAddress = {

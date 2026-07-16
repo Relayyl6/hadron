@@ -1,17 +1,6 @@
 import { apiRequest } from '@/shared/utils/fetch'
 import type { User } from '../../context/user-context'
 
-interface BackendLoginResponse {
-  status: boolean;
-  message: string;
-  user: User;
-}
-
-interface GenericStatusResponse {
-  success: boolean;
-  message: string;
-}
-
 // 1. POST /api/users/auth/login-user
 export async function loginRequest(email: string, password: string): Promise<User> {
   const data = await apiRequest<BackendLoginResponse>('/api/users/auth/login-user', {
