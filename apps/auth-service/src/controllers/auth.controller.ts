@@ -33,7 +33,7 @@ export const userRegistration = async (req: Request, res: Response, next: NextFu
             validatedData?.account.name as string,
             validatedData?.account.email as string,
             ipAddress,
-            "user-activation-mail"
+            validatedData?.account.role === "SELLER" ? "seller-activation-email" : "user-activation-mail"
         )
 
         const salt = await bcrypt.genSalt(10);
@@ -117,7 +117,15 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
                     ...account,
                     role: "SELLER",
                     sellerProfile: {
-                        create: sellerProfile,
+                        create: {
+                            phoneNumber: sellerProfile.phoneNumber,
+                            country: sellerProfile.country,
+                            businessName: sellerProfile.businessName,
+                            businessType: sellerProfile.businessType,
+                            taxId: sellerProfile.taxId,
+                            storeDescription: sellerProfile.storeDescription,
+                            payoutBankDetails: sellerProfile.payoutBankDetails,
+                        },
                     },
                 },
                 select: { id: true, name: true, email: true, role: true, sellerProfile: true },
@@ -164,6 +172,7 @@ export const verifyRegistrationOtp = async (req: Request, res: Response, next: N
                     try {
                         await redis.del(`otp:${req.body.email}`);
                         await redis.del(`pending_user:${req.body.email}`);
+                        await redis.del(`otp_verified_session:${req.body.email}`);
                     } catch (redisError) {
                         console.error("Failed to clean up Redis after DB error:", redisError);
                     }
@@ -360,3 +369,4 @@ export const userLogin = async (
         return next(error);
     }
 }
+

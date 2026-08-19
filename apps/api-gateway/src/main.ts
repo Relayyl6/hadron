@@ -26,7 +26,7 @@ app.use(morgan("dev"));
 app.use(cookieParser());
 app.set("trust proxy", 1); // Trust first proxy if behind a load balancer
 
-const bodyLimit = process.env.BODY_LIMIT || "10mb";
+const bodyLimit = process.env.BODY_LIMIT || "50mb";
 app.use(express.json({ limit: bodyLimit }));
 app.use(express.urlencoded({ limit: bodyLimit, extended: true }));
 
@@ -52,10 +52,14 @@ app.get('/api/gateway-health', (req: Request, res: Response) => {
 });
 
 
+
 // --- 5. Microservice Routing ---
 // Route specific paths to specific downstream microservices
-app.use("/api/users", proxy(process.env.USER_SERVICE_URL || "http://localhost:6001"));
-app.use("/api/products", proxy(process.env.PRODUCT_SERVICE_URL || "http://localhost:6002"));
+const proxyOptions = {
+  limit: '50mb' // Tells the proxy to allow large payloads to pass through
+};
+app.use("/api/users", proxy(process.env.USER_SERVICE_URL || "http://localhost:6001", proxyOptions));
+app.use("/api/products", proxy(process.env.PRODUCT_SERVICE_URL || "http://localhost:6002", proxyOptions));
 
 
 // --- 6. Error Handling ---

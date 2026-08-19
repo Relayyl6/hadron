@@ -29,7 +29,7 @@ declare interface User {
   } | null
   sellerProfile?: {
     businessName: string
-    businessType: "RETAIL" | "SERVICES" | "REGISTERED_COMPANY"
+    businessType: "CORPORATION" | "FREELANCER" | "SOLE_PROPRIETOR"
     taxId?: string | null
     storeDescription?: string | null
     isVerified: boolean

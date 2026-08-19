@@ -28,11 +28,12 @@ export const validateRegistrationData = (data: RegistrationPayload) => {
       throw new ValidationError("Sellers must provide a business name and business type.");
     }
 
-    if (sellerProfile.businessType === "REGISTERED_COMPANY" && !sellerProfile.taxId) {
+    if (sellerProfile.businessType === "SOLE_PROPRIETOR" && !sellerProfile.taxId) {
       throw new ValidationError("Registered companies must provide a valid tax ID.");
     }
 
     return {
+      role: "SELLER" as const,
       account,
       sellerProfile: {
         ...sellerProfile,
@@ -47,6 +48,7 @@ export const validateRegistrationData = (data: RegistrationPayload) => {
   const { account, customerProfile } = data;
 
   return {
+    role: "CUSTOMER" as const,
     account,
     customerProfile: {
       phoneNumber: customerProfile?.phoneNumber,
@@ -201,8 +203,12 @@ export const initiatePasswordReset = async (email: string, ipAddress: string) =>
     await trackOtpRequests(normalizedEmail);
 
     // 3. Trigger side effect
-    await sendOtp(user.name, normalizedEmail, ipAddress, "forgot-password-user-mail");
-
+    await sendOtp(
+      user.name,
+      normalizedEmail,
+      ipAddress,
+      user.role === "SELLER" ? "forgot-password-seller-mail" : "forgot-password-user-mail"
+    );
     return { success: true, message: "OTP sent to your email." };
 };
 

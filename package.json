@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "npx nx run-many --target=serve --all",
     "user-ui": "nx dev user-ui",
+    "swagger": "node apps/auth-service/src/swagger.js",
+    "seller-ui": "nx dev seller-ui",
     "auth-service": "npx nx serve auth-service"
   },
   "private": true,
@@ -37,6 +39,7 @@
     "react-hook-form": "^7.80.0",
     "react-icons": "^5.6.0",
     "react-toastify": "^11.1.0",
+    "stripe": "^22.5.0",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.4.3"

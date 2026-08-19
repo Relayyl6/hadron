@@ -68,7 +68,7 @@ export const registrationSchema = z.object({
     if (!data.businessName || data.businessName.trim() === '') {
       ctx.addIssue({ code: 'custom', path: ['businessName'], message: 'Business name is required.' })
     }
-    if (data.businessType === 'REGISTERED_COMPANY' && (!data.taxId || data.taxId.trim() === '')) {
+    if (data.businessType === 'SOLE_PROPRIETOR' && (!data.taxId || data.taxId.trim() === '')) {
       ctx.addIssue({ code: 'custom', path: ['taxId'], message: 'Tax ID is required for registered corporations.' })
     }
   }

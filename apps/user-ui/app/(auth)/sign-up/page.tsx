@@ -18,8 +18,6 @@ import {
 } from '@/shared/utils/lib'
 import { parseAddressString } from '@/shared/utils/addressParser'
 
-type Role = 'CUSTOMER' | 'SELLER'
-
 type SignUpFormValues = z.infer<typeof registrationSchema>
 
 export default function SignupPage() {
@@ -50,6 +48,8 @@ export default function SignupPage() {
 
   // ─────────────────────────────────────────────────────────────────────────────
   // 2. UNIFIED FORM SETUP (REACT HOOK FORM)
+  // role is locked to 'CUSTOMER' — the field still exists (schema/API still
+  // expect it) but there's no way to change it from the UI anymore.
   // ─────────────────────────────────────────────────────────────────────────────
   const { register, handleSubmit, watch, setValue, trigger, getValues, formState: { errors } } = useForm<SignUpFormValues>({
     resolver: zodResolver(registrationSchema),
@@ -62,15 +62,11 @@ export default function SignupPage() {
       phoneNumber: '',
       address: '',
       gender: 'UNSPECIFIED',
-      businessName: '',
-      businessType: 'INDIVIDUAL',
-      taxId: '',
       marketingConsent: false,
       pushNotifications: false,
     }
   })
 
-  const selectedRole = watch('role')
   const userEmail = watch('email')
 
   // Step Navigators matching field checks before track transitions
@@ -84,11 +80,7 @@ export default function SignupPage() {
 
   const handlePrevStep = () => {
     setGlobalError('')
-    if (step === 4 && selectedRole === 'SELLER') {
-      setStep(2)
-    } else {
-      setStep((prev) => Math.max(0, prev - 1))
-    }
+    setStep((prev) => Math.max(0, prev - 1))
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -100,33 +92,23 @@ export default function SignupPage() {
     mutationFn: async (values: SignUpFormValues) => {
       const formattedAddress = parseAddressString(values.address);
       const payload = {
-        role: values.role,
+        role: 'CUSTOMER' as const,
         account: {
           name: values.name,
           email: values.email,
           password: values.password
         },
-        ...(values.role === 'SELLER'
-          ? {
-              sellerProfile: {
-                businessName: values.businessName,
-                businessType: values.businessType,
-                taxId: values.businessType === 'REGISTERED_COMPANY' ? values.taxId : undefined,
-              },
-            }
-          : {
-              customerProfile: {
-                phoneNumber: values.phoneNumber,
-                address: formattedAddress,
-                gender: values.gender,
-                preferences: { 
-                  currency: 'USD', 
-                  language: 'en',
-                  marketingConsent: values.marketingConsent,
-                  pushNotifications: values.pushNotifications
-                },
-              },
-            }),
+        customerProfile: {
+          phoneNumber: values.phoneNumber,
+          address: formattedAddress,
+          gender: values.gender,
+          preferences: { 
+            currency: 'USD', 
+            language: 'en',
+            marketingConsent: values.marketingConsent,
+            pushNotifications: values.pushNotifications
+          },
+        },
       }
       return apiRequest<{
         success: boolean;
@@ -195,10 +177,12 @@ export default function SignupPage() {
           style={{ transform: `translateX(-${step * 100}%)` }}
         >
           
-          {/* STEP 0: Role Selection */}
+          {/* STEP 0: Role Panel — kept for the visual, but locked to Customer.
+              The select only has one option and is disabled so it can't be
+              changed; register('role') still reports 'CUSTOMER' via defaultValues. */}
           <div className='w-full flex-shrink-0 p-8'>
             <h1 className='mb-1 text-xl font-semibold text-gray-900'>Join Hadron</h1>
-            <p className='mb-6 text-sm text-gray-500'>Choose how you plan to use our platform application.</p>
+            <p className='mb-6 text-sm text-gray-500'>Create your account to start discovering and buying.</p>
             
             <div className='flex flex-col gap-5'>
               <div className='flex flex-col gap-2'>
@@ -207,17 +191,17 @@ export default function SignupPage() {
                 </label>
                 <select
                   id='role'
-                  {...register('role')}
-                  className='w-full rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
+                  disabled
+                  value='CUSTOMER'
+                  className='w-full cursor-not-allowed rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-600 outline-none'
                 >
                   <option value='CUSTOMER'>Customer (Discover & Buy Items)</option>
-                  <option value='SELLER'>Merchant Seller (List & Manage Products)</option>
                 </select>
               </div>
               
               <button
                 type='button'
-                onClick={() => handleNextStep(['role'])}
+                onClick={() => setStep(1)}
                 className='mt-2 rounded-md bg-gray-900 py-2 text-sm font-medium text-white transition-opacity hover:opacity-85'
               >
                 Continue
@@ -286,130 +270,68 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* STEP 2: Conditional Profile Details */}
+          {/* STEP 2: Profile Settings (Customer only) */}
           <div className='w-full flex-shrink-0 p-8'>
-            <h1 className='mb-1 text-xl font-semibold text-gray-900'>
-              {selectedRole === 'SELLER' ? 'Business Profile' : 'Profile Settings'}
-            </h1>
+            <h1 className='mb-1 text-xl font-semibold text-gray-900'>Profile Settings</h1>
             <p className='mb-6 text-sm text-gray-500'>Complete context profiles to customize experience</p>
             
-            {selectedRole === 'CUSTOMER' ? (
-              <div className='flex flex-col gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-gray-700' htmlFor='phone'>Phone Number</label>
-                  <input
-                    id='phone'
-                    type='tel'
-                    {...register('phoneNumber')}
-                    placeholder='+234...'
-                    className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                  />
-                  {errors.phoneNumber && <p className='text-xs text-red-500'>{errors.phoneNumber.message}</p>}
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-gray-700' htmlFor='address'>Physical Address</label>
-                  <input
-                    id='address'
-                    type='text'
-                    {...register('address')}
-                    placeholder='e.g. No. 50 Buvale Boulevard, Wuse, Abuja-FCT, Nigeria, 901101'
-                    className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                  />
-                  {errors.address && <p className='text-xs text-red-500'>{errors.address.message}</p>}
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-gray-700' htmlFor='gender'>Gender</label>
-                  <select
-                    id='gender'
-                    {...register('gender')}
-                    className='rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                  >
-                    <option value='UNSPECIFIED'>Prefer not to say</option>
-                    <option value='MALE'>Male</option>
-                    <option value='FEMALE'>Female</option>
-                    <option value='OTHER'>Other</option>
-                  </select>
-                </div>
-
-                <div className='flex gap-3 mt-2'>
-                  <button
-                    type='button'
-                    onClick={handlePrevStep}
-                    className='flex-1 rounded-md border border-gray-200 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50'
-                  >
-                    Back
-                  </button>
-                  <button
-                    type='button'
-                    onClick={() => handleNextStep(['phoneNumber', 'address', 'gender'])}
-                    className='flex-1 rounded-md bg-gray-900 py-2 text-sm font-medium text-white transition-opacity hover:opacity-85'
-                  >
-                    Continue
-                  </button>
-                </div>
+            <div className='flex flex-col gap-4'>
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-gray-700' htmlFor='phone'>Phone Number</label>
+                <input
+                  id='phone'
+                  type='tel'
+                  {...register('phoneNumber')}
+                  placeholder='+234...'
+                  className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
+                />
+                {errors.phoneNumber && <p className='text-xs text-red-500'>{errors.phoneNumber.message}</p>}
               </div>
-            ) : (
-              <form onSubmit={handleSubmit((vals: SignUpFormValues) => initiateRegistrationMutation.mutate(vals))} className='flex flex-col gap-4'>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-gray-700' htmlFor='bizName'>Business Name</label>
-                  <input
-                    id='bizName'
-                    type='text'
-                    {...register('businessName')}
-                    placeholder='Hadron Merchant LLC'
-                    className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                  />
-                  {errors.businessName && <p className='text-xs text-red-500'>{errors.businessName.message}</p>}
-                </div>
-                <div className='flex flex-col gap-1.5'>
-                  <label className='text-sm font-medium text-gray-700' htmlFor='bizType'>Company Structure</label>
-                  <select
-                    id='bizType'
-                    {...register('businessType')}
-                    className='rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                  >
-                    <option value='INDIVIDUAL'>Sole Proprietor / Individual</option>
-                    <option value='REGISTERED_COMPANY'>Registered Corporate entity</option>
-                  </select>
-                </div>
-                {watch('businessType') === 'REGISTERED_COMPANY' && (
-                  <div className='flex flex-col gap-1.5 animate-fadeIn'>
-                    <label className='text-sm font-medium text-gray-700' htmlFor='taxId'>Tax ID (TIN)</label>
-                    <input
-                      id='taxId'
-                      type='text'
-                      {...register('taxId')}
-                      placeholder='12345678-0001'
-                      className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
-                    />
-                    {errors.taxId && <p className='text-xs text-red-500'>{errors.taxId.message}</p>}
-                  </div>
-                )}
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-gray-700' htmlFor='address'>Physical Address</label>
+                <input
+                  id='address'
+                  type='text'
+                  {...register('address')}
+                  placeholder='e.g. No. 50 Buvale Boulevard, Wuse, Abuja-FCT, Nigeria, 901101'
+                  className='rounded-md border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
+                />
+                {errors.address && <p className='text-xs text-red-500'>{errors.address.message}</p>}
+              </div>
+              <div className='flex flex-col gap-1.5'>
+                <label className='text-sm font-medium text-gray-700' htmlFor='gender'>Gender</label>
+                <select
+                  id='gender'
+                  {...register('gender')}
+                  className='rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100'
+                >
+                  <option value='UNSPECIFIED'>Prefer not to say</option>
+                  <option value='MALE'>Male</option>
+                  <option value='FEMALE'>Female</option>
+                  <option value='OTHER'>Other</option>
+                </select>
+              </div>
 
-                {globalError && <p className='text-xs text-red-500 mt-1'>{globalError}</p>}
-
-                <div className='flex gap-3 mt-2'>
-                  <button
-                    type='button'
-                    onClick={handlePrevStep}
-                    disabled={initiateRegistrationMutation.isPending}
-                    className='flex-1 rounded-md border border-gray-200 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 disabled:opacity-50'
-                  >
-                    Back
-                  </button>
-                  <button
-                    type='submit'
-                    disabled={initiateRegistrationMutation.isPending}
-                    className='flex-1 rounded-md bg-gray-900 py-2 text-sm font-medium text-white transition-opacity hover:opacity-85 disabled:opacity-50'
-                  >
-                    {initiateRegistrationMutation.isPending ? 'Processing...' : 'Send OTP Mail'}
-                  </button>
-                </div>
-              </form>
-            )}
+              <div className='flex gap-3 mt-2'>
+                <button
+                  type='button'
+                  onClick={handlePrevStep}
+                  className='flex-1 rounded-md border border-gray-200 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50'
+                >
+                  Back
+                </button>
+                <button
+                  type='button'
+                  onClick={() => handleNextStep(['phoneNumber', 'address', 'gender'])}
+                  className='flex-1 rounded-md bg-gray-900 py-2 text-sm font-medium text-white transition-opacity hover:opacity-85'
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* STEP 3: Dedicated Customer Preferences Screen */}
+          {/* STEP 3: Preferences */}
           <div className='w-full flex-shrink-0 p-8'>
             <h1 className='mb-1 text-xl font-semibold text-gray-900'>Preferences</h1>
             <p className='mb-6 text-sm text-gray-500'>Fine-tune how you stay up to date with updates.</p>

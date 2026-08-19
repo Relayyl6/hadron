@@ -33,8 +33,10 @@ export interface CustomerProfilePayload {
 
 // 3. A robust Seller-specific profile (For reference)
 export interface SellerProfilePayload {
+  phoneNumber: string;
+  country: string;
   businessName: string;
-  businessType: BusinessType; // e.g., "RETAIL", "SERVICES"
+  businessType: BusinessType; // e.g., "CORPORATION", "FREELANCER"
   taxId?: string;
   storeDescription?: string;
   payoutBankDetails?: {

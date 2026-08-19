@@ -14,10 +14,9 @@ enum Role {
 }
 
 enum BusinessType {
-  RETAIL
-  SERVICES
-  REGISTERED_COMPANY
-  // add more as needed — these should mirror whatever string values your client sends
+  CORPORATION
+  FREELANCER
+  SOLE_PROPRIETOR
 }
 
 enum Gender {
@@ -27,72 +26,126 @@ enum Gender {
 }
 
 model images {
-  id      String  @id @default(auto()) @map("_id") @db.ObjectId
-  file_id String
-  url     String
-  userId  String? @unique @db.ObjectId
-  users   users?  @relation(fields: [userId], references: [id])
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  file_id               String
+  url                   String
+
+  // an image can belong to EITHER a user avatar OR a shop avatar — both optional
+  userId                String?           @unique @db.ObjectId
+  users                 users?            @relation(fields: [userId], references: [id])
+
+  shopId                String?           @unique @db.ObjectId
+  shops                 shops?            @relation(fields: [shopId], references: [id])
 }
 
 model users {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  name     String
-  email    String  @unique
-  password String
-  role     Role
+  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String
+  email                 String            @unique
+  password              String
+  role                  Role
 
-  following String[]
-  avatar    images?
+  following             String[]
+  avatar                images?
 
-  sellerProfile   SellerProfile?
-  customerProfile CustomerProfile?
+  sellerProfile         SellerProfile?
+  customerProfile       CustomerProfile?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  shopReviews           shopReviews[]
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 }
 
 type Address {
-  street     String
-  city       String
-  state      String
-  country    String
-  postalCode String?
+  street                String
+  city                  String
+  state                 String
+  country               String
+  postalCode            String?
 }
 
 type Preferences {
-  currency          String?
-  language          String?
-  marketingConsent  Boolean?
-  pushNotifications Boolean?
+  currency              String?
+  language              String?
+  marketingConsent      Boolean?
+  pushNotifications     Boolean?
 }
 
 type PayoutBankDetails {
-  bankName      String
-  accountNumber String
-  accountName   String
+  bankName              String
+  accountNumber         String
+  accountName           String
 }
 
 model CustomerProfile {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  phoneNumber String?
-  dateOfBirth String?
-  gender      Gender?
-  preferences Preferences?
-  address     Address?
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber           String?
+  dateOfBirth           String?
+  gender                Gender?
+  preferences           Preferences?
+  address               Address?
 
-  userId String @unique @db.ObjectId
-  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String             @unique @db.ObjectId
+  user                  users              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SellerProfile {
-  id                String             @id @default(auto()) @map("_id") @db.ObjectId
-  businessName      String
-  businessType      BusinessType
-  taxId             String?
-  storeDescription  String?
-  payoutBankDetails PayoutBankDetails?
-  isVerified        Boolean            @default(false)
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber           String?
+  country               String
+  businessName          String
+  businessType          BusinessType
+  taxId                 String?
+  storeDescription      String?
+  payoutBankDetails     PayoutBankDetails?
+  isVerified            Boolean            @default(false)
 
-  userId String @unique @db.ObjectId
-  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Stripe Connect — all server-set, never from client payload
+  stripeAccountId       String?            @unique
+  stripeOnboarded       Boolean            @default(false)  // account.details_submitted
+  stripePayoutsEnabled  Boolean            @default(false)  // account.payouts_enabled
+
+  userId                String             @unique @db.ObjectId
+  user                  users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // one seller profile -> one shop
+  shop                  shops?
+}
+
+model shops {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  name                  String          
+  bio                   String?          
+  category              String?          
+  avatar                images?          
+  coverBanner           String?          
+  address               String          
+  opening_hours         String?          
+  website               String?          
+  socialLinks           Json[]          
+  ratings               Float              @default(0)
+
+  reviews               shopReviews[]
+
+  sellerProfileId       String             @unique @db.ObjectId
+  sellerProfile         SellerProfile      @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model shopReviews {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  rating                Float            
+  reviews               String             
+            
+  userId                String             @db.ObjectId
+  user                  users              @relation(fields: [userId], references: [id])
+            
+  shopsId               String             @db.ObjectId
+  shops                 shops              @relation(fields: [shopsId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
 }
