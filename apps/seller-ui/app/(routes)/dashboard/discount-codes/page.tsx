@@ -2,9 +2,10 @@
 
 import { apiRequest } from '@/shared/utils/fetch'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronRight, Plus, Trash2, X, Loader2 } from 'lucide-react'
+import { ChevronRight, Plus, Trash2, X, Loader2, Wand2 } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { toast } from 'react-toastify'
 
 const DiscountPage = () => {
     const queryClient = useQueryClient();
@@ -22,7 +23,7 @@ const DiscountPage = () => {
     const { data, isLoading, isError } = useQuery({
         queryKey: ["shop-discounts"],
         queryFn: async () => {
-            return await apiRequest<{ success: boolean; discountCodes: any[] }>(
+            return await apiRequest<{ success: boolean; discount_codes: any[] }>(
                 '/api/products/product/get-discount-codes',
             ); 
         },
@@ -30,7 +31,7 @@ const DiscountPage = () => {
         retry: 2,
     })
 
-    const discountCodes = data?.discountCodes || [];
+    const discountCodes = data?.discount_codes || [];
 
     // 2. Delete Mutation
     const deleteMutation = useMutation({
@@ -43,6 +44,7 @@ const DiscountPage = () => {
         onSuccess: () => {
             // Refresh the table instantly
             queryClient.invalidateQueries({ queryKey: ["shop-discounts"] });
+            toast.success("Discount code deleted successfully!");
         }
     });
 
@@ -61,10 +63,18 @@ const DiscountPage = () => {
             queryClient.invalidateQueries({ queryKey: ["shop-discounts"] });
             setShowModal(false);
             setFormData({ public_name: '', discountType: 'percentage', discountValue: '', discountCode: '' }); // Reset form
+            toast.success("Discount code created successfully!");
+        },
+        onError: (error: any) => {
+            toast.error(error.message || "Failed to create discount code");
         }
     });
 
     const handleCreateSubmit = (e: React.FormEvent) => {
+        if (discountCodes.length >= 8) {
+            toast.error("You are only allowed to create up to 8 discount codes")
+            return;
+        }
         e.preventDefault();
         createMutation.mutate(formData);
     };
@@ -261,12 +271,13 @@ const DiscountPage = () => {
                                         className='w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-blue-500'
                                         placeholder="SUMMER20"
                                     />
-                                    <button 
-                                        type="button"
-                                        onClick={handleGenerateDiscountCode}
-                                        className='px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition whitespace-nowrap'
+                                    <button
+                                      type="button"
+                                      onClick={handleGenerateDiscountCode}
+                                      className="h-[50px] px-4 bg-[#18181b] hover:bg-gray-800 text-[#80Deea] border border-gray-700 rounded-xl transition-colors flex items-center justify-center whitespace-nowrap"
+                                      title="Auto-generate from Title"
                                     >
-                                        Generate
+                                      <Wand2 size={18} />
                                     </button>
                                 </div>
                             </div>

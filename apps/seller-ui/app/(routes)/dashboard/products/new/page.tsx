@@ -16,6 +16,7 @@ import { useCategories } from '@/hooks/useCategories';
 import RichTextEditor from '@/components/RichTextEditor';
 import SizeSelector from '@/components/SizeSelector.tsx';
 import CategorySelector from '@/components/CategorySelector';
+import { useDiscount } from '@/hooks/useDiscount';
 
 const MAX_IMAGES = 8;
 type ImageSlot = {
@@ -183,7 +184,7 @@ const CreateProductPage = () => {
   };
 
   const { categories, subCategories, isLoading, isError } = useCategories();
-
+  const { discountCodes, isLoading: discountLoading, isError: discountError } = useDiscount()
 
   const regularPrice = watch('regular_price');
 
@@ -614,6 +615,35 @@ const CreateProductPage = () => {
                 Optional
               </span>
             </div>
+
+            {discountLoading ? (
+              <p className='text-gray-400'>
+                Loading Discount Codes...
+              </p>
+            ): (
+              <div className='flex flex-wrap gap-2'>
+                {discountCodes?.map((code: any) => (
+                  <button
+                    className={`
+                      px-3 py-1 rounded-md text-sm font-semibold border 
+                      ${watch("discountCodes")?.(code.id) 
+                        ? "bg-blue-600 text-white border-blue-600"
+                        : "bg-gray-800 text-gray-300 border-gray-600 hover:border-gray-700"}
+                      `} 
+                    type='button' 
+                    key={code.id}
+                    onClick={() => {
+                      const currentSelection = watch("discountCodes") || []
+                      const updatedSelection = currentSelection?.includes(code.id) 
+                        ? currentSelection.filter((id: string) => id !== code.id) 
+                        : [...currentSelection, code.id]; setValue("discountCodes", updatedSelection) 
+                    }}
+                  >
+                    {code?.public_name} ({code.discountValue} {code.discountType === "percentage" ? "%" : "$"})
+                  </button> 
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
