@@ -1,27 +1,36 @@
-import { Request, Response, NextFunction } from "express";
-import { prisma } from "../../../../packages/lib/prisma";
-import { ValidationError, NotFoundError } from "../../../../packages/error-handler";
+import { Request, Response, NextFunction } from 'express';
+import { prisma } from '@hadron/lib/prisma';
+import { ValidationError, NotFoundError } from '@hadron/error-handler';
 
 // ---- POST /seller/shop ----
 export const createShop = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user?.id;
-    if (!userId) throw new ValidationError("Unauthorized");
+    if (!userId) throw new ValidationError('Unauthorized');
 
-    const { name, bio, category, coverBanner, address, opening_hours, website, socialLinks } = req.body;
+    const {
+      name,
+      bio,
+      category,
+      coverBanner,
+      address,
+      opening_hours,
+      website,
+      socialLinks,
+    } = req.body;
 
     if (!name || !address) {
-      throw new ValidationError("Shop name and address are required.");
+      throw new ValidationError('Shop name and address are required.');
     }
 
     const sellerProfile = await prisma.sellerProfile.findUnique({
       where: { userId },
     });
-    if (!sellerProfile) throw new ValidationError("Seller profile not found");
+    if (!sellerProfile) throw new ValidationError('Seller profile not found');
 
     // for business logic, this is terrible practise for th eonboarding
     // if (!sellerProfile.stripePayoutsEnabled) {
@@ -33,7 +42,7 @@ export const createShop = async (
       where: { sellerProfileId: sellerProfile.id },
     });
     if (existingShop) {
-      throw new ValidationError("You already have a shop.");
+      throw new ValidationError('You already have a shop.');
     }
 
     const shop = await prisma.shops.create({
@@ -60,18 +69,19 @@ export const createShop = async (
 export const getMyShop = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user?.id;
-    if (!userId) throw new ValidationError("Unauthorized");
+    if (!userId) throw new ValidationError('Unauthorized');
 
     const sellerProfile = await prisma.sellerProfile.findUnique({
       where: { userId },
       include: { shop: { include: { avatar: true, reviews: true } } },
     });
-    if (!sellerProfile) throw new ValidationError("Seller profile not found");
-    if (!sellerProfile.shop) throw new NotFoundError("You haven't created a shop yet.");
+    if (!sellerProfile) throw new ValidationError('Seller profile not found');
+    if (!sellerProfile.shop)
+      throw new NotFoundError("You haven't created a shop yet.");
 
     res.status(200).json({ success: true, shop: sellerProfile.shop });
   } catch (error) {
@@ -83,21 +93,31 @@ export const getMyShop = async (
 export const updateShop = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user?.id;
-    if (!userId) throw new ValidationError("Unauthorized");
+    if (!userId) throw new ValidationError('Unauthorized');
 
     const sellerProfile = await prisma.sellerProfile.findUnique({
       where: { userId },
       include: { shop: true },
     });
-    if (!sellerProfile) throw new ValidationError("Seller profile not found");
-    if (!sellerProfile.shop) throw new NotFoundError("You haven't created a shop yet.");
+    if (!sellerProfile) throw new ValidationError('Seller profile not found');
+    if (!sellerProfile.shop)
+      throw new NotFoundError("You haven't created a shop yet.");
 
     // whitelist updatable fields — never trust req.body wholesale on an update
-    const { name, bio, category, coverBanner, address, opening_hours, website, socialLinks } = req.body;
+    const {
+      name,
+      bio,
+      category,
+      coverBanner,
+      address,
+      opening_hours,
+      website,
+      socialLinks,
+    } = req.body;
 
     const updated = await prisma.shops.update({
       where: { id: sellerProfile.shop.id },
@@ -123,7 +143,7 @@ export const updateShop = async (
 export const getShopById = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
@@ -133,7 +153,7 @@ export const getShopById = async (
       include: { avatar: true, reviews: true },
     });
 
-    if (!shop) throw new NotFoundError("Shop not found");
+    if (!shop) throw new NotFoundError('Shop not found');
 
     res.status(200).json({ success: true, shop });
   } catch (error) {

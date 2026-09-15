@@ -1,0 +1,1 @@
+const React = require('react'); const { renderToString } = require('react-dom/server'); const ReactQuill = require('react-quill-new'); try { renderToString(React.createElement(ReactQuill, { value: '' })); console.log('Success'); } catch (e) { console.error('Error:', e.stack); }

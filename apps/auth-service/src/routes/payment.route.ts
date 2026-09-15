@@ -1,33 +1,37 @@
-import { Router } from "express"
-import express from "express"
-import { stripeWebhookHandler, createSellerOnboardingLink, verifyStripeAccountStatus } from "../controllers/payment.controller"
-import { authenticate } from "../../../../packages/auth-handler/auth.middleware"
-import { isSeller } from "../../../../packages/auth-handler/role.middleware"
+import { Router } from 'express';
+import express from 'express';
+import {
+  stripeWebhookHandler,
+  createSellerOnboardingLink,
+  verifyStripeAccountStatus,
+} from '../controllers/payment.controller';
+import { authenticate } from '@hadron/auth-handler/auth.middleware';
+import { isSeller } from '@hadron/auth-handler/role.middleware';
 
-const paymentRouter = Router()
+const paymentRouter = Router();
 
 paymentRouter.post(
-  "/webhooks/stripe",
-  express.raw({ type: "application/json" }),
+  '/webhooks/stripe',
+  express.raw({ type: 'application/json' }),
   /* #swagger.tags = ['Payment'] */
-  stripeWebhookHandler
+  stripeWebhookHandler,
 );
 
 paymentRouter.use(express.json()); // everything else
 
 paymentRouter.post(
-  "/seller/stripe/onboarding-link", 
-  authenticate, 
-  isSeller, 
+  '/seller/stripe/onboarding-link',
+  authenticate,
+  isSeller,
   /* #swagger.tags = ['Payment'] */
-  createSellerOnboardingLink
+  createSellerOnboardingLink,
 );
 
 paymentRouter.get(
-  "/seller/stripe/verify-status", 
-  authenticate, 
-  isSeller, 
-  verifyStripeAccountStatus
+  '/seller/stripe/verify-status',
+  authenticate,
+  isSeller,
+  verifyStripeAccountStatus,
 );
 
 export default paymentRouter;

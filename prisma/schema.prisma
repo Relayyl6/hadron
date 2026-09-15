@@ -101,16 +101,17 @@ model SellerProfile {
   payoutBankDetails     PayoutBankDetails?
   isVerified            Boolean            @default(false)
 
-  // Stripe Connect — all server-set, never from client payload
   stripeAccountId       String?            @unique
-  stripeOnboarded       Boolean            @default(false)  // account.details_submitted
-  stripePayoutsEnabled  Boolean            @default(false)  // account.payouts_enabled
+  stripeOnboarded       Boolean            @default(false)
+  stripePayoutsEnabled  Boolean            @default(false)
 
   userId                String             @unique @db.ObjectId
   user                  users              @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // one seller profile -> one shop
   shop                  shops?
+
+  // Add this line to complete the relationship
+  discountCodes         discount_codes[]
 }
 
 model shops {
@@ -148,4 +149,25 @@ model shopReviews {
 
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
+}
+
+model site_configs {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  categories            String[]
+  subCategories         Json
+}
+
+model discount_codes {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  public_name     String
+  discountType    String
+  discountValue   Float
+  discountCode    String             @unique 
+  
+  // The relation linking to the SellerProfile
+  sellerId        String             @db.ObjectId
+  sellerProfile   SellerProfile      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 }

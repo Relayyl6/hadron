@@ -1,12 +1,21 @@
-import { Router } from "express"
-import { forgetPassword, getLoggedInUser, refrehsToken, resetPassword, userLogin, userRegistration, verifyForgetPassword, verifyRegistrationOtp } from "../controllers/auth.controller"
-import { authenticate } from "../../../../packages/auth-handler/auth.middleware"
+import { Router } from 'express';
+import {
+  forgetPassword,
+  getLoggedInUser,
+  refrehsToken,
+  resetPassword,
+  userLogin,
+  userRegistration,
+  verifyForgetPassword,
+  verifyRegistrationOtp,
+} from '../controllers/auth.controller';
+import { authenticate } from '@hadron/auth-handler/auth.middleware';
 
-const authRouter = Router()
+const authRouter = Router();
 
 // Initiates registration, saves to Redis, and sends the OTP email
 authRouter.post(
-  "/user-registration", 
+  '/user-registration',
   /* 
     #swagger.tags = ['Auth']
     #swagger.description = 'Initiates user registration and sends an OTP.'
@@ -17,12 +26,12 @@ authRouter.post(
       schema: { $ref: '#/definitions/CustomerRegistrationPayload' }
     }
   */
-  userRegistration
-)
+  userRegistration,
+);
 
 // Validates the OTP, fetches from Redis, and creates the user in the Database
 authRouter.post(
-  "/verify-registration", 
+  '/verify-registration',
   /* 
     #swagger.tags = ['Auth']
     #swagger.parameters['body'] = {
@@ -31,12 +40,12 @@ authRouter.post(
       schema: { $ref: '#/definitions/VerifyOtpPayload' }
     }
   */
-  verifyRegistrationOtp
-)
+  verifyRegistrationOtp,
+);
 
 // Login a user, create the access and refresh token, and fetch the user from the Database
 authRouter.post(
-  "/login-user", 
+  '/login-user',
   /* 
     #swagger.tags = ['Auth']
     #swagger.parameters['body'] = {
@@ -45,43 +54,43 @@ authRouter.post(
       schema: { $ref: '#/definitions/LoginPayload' }
     }
   */
-  userLogin
-)
+  userLogin,
+);
 
 // generate and send a refresh user token
 authRouter.post(
-  "/refresh_token", 
+  '/refresh_token',
   /* #swagger.tags = ['Auth'] */
-  refrehsToken
-)
+  refrehsToken,
+);
 
-// get the currently logged in user 
+// get the currently logged in user
 authRouter.get(
-  "/get_logged_in_user", 
-  authenticate, 
+  '/get_logged_in_user',
+  authenticate,
   /* #swagger.tags = ['Auth'] */
-  getLoggedInUser
-)
+  getLoggedInUser,
+);
 
 // User forgot password
 authRouter.post(
-  "/forget-password", 
+  '/forget-password',
   /* #swagger.tags = ['Auth'] */
-  forgetPassword
-)
+  forgetPassword,
+);
 
 // Verify forgotten password with provided otp sent to email
 authRouter.post(
-  "/verify-password-otp", 
+  '/verify-password-otp',
   /* #swagger.tags = ['Auth'] */
-  verifyForgetPassword
-)
+  verifyForgetPassword,
+);
 
 // reset Password to a new password
 authRouter.post(
-  "/reset-password", 
+  '/reset-password',
   /* #swagger.tags = ['Auth'] */
-  resetPassword
-)
+  resetPassword,
+);
 
-export default authRouter
+export default authRouter;

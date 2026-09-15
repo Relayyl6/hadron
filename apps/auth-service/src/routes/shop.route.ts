@@ -1,45 +1,45 @@
-import { Router } from "express";
+import { Router } from 'express';
 import {
   createShop,
   getMyShop,
   updateShop,
   getShopById,
-} from "../controllers/shop.controller";
-import { authenticate } from "../../../../packages/auth-handler/auth.middleware";
-import { isSeller } from "../../../../packages/auth-handler/role.middleware";
+} from '../controllers/shop.controller';
+import { authenticate } from '@hadron/auth-handler/auth.middleware';
+import { isSeller } from '@hadron/auth-handler/role.middleware';
 
 const shopRouter = Router();
 
 // seller-only — manage your own shop
 shopRouter.post(
-  "/seller/shop", 
-  authenticate, 
-  isSeller, 
+  '/seller/shop',
+  authenticate,
+  isSeller,
   /* #swagger.tags = ['Shop'] */
-  createShop
+  createShop,
 );
 
 shopRouter.get(
-  "/seller/shop", 
-  authenticate, 
-  isSeller, 
+  '/seller/shop',
+  authenticate,
+  isSeller,
   /* #swagger.tags = ['Shop'] */
-  getMyShop
+  getMyShop,
 );
 
 shopRouter.patch(
-  "/seller/shop", 
-  authenticate, 
-  isSeller, 
+  '/seller/shop',
+  authenticate,
+  isSeller,
   /* #swagger.tags = ['Shop'] */
-  updateShop
+  updateShop,
 );
 
 // public — anyone can view a storefront
 shopRouter.get(
-  "/shops/:id", 
+  '/shops/:id',
   /* #swagger.tags = ['Shop'] */
-  getShopById
+  getShopById,
 );
 
 export default shopRouter;

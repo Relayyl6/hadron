@@ -6,7 +6,7 @@
     "version": "1.0.0"
   },
   "host": "localhost:6001",
-  "basePath": "/",
+  "basePath": "/user/api",
   "tags": [
     {
       "name": "Auth",
@@ -21,15 +21,11 @@
       "description": "Endpoints for shop creation and management"
     }
   ],
-  "schemes": [
-    "http"
-  ],
+  "schemes": ["http"],
   "paths": {
     "/auth/user-registration": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "Initiates user registration and sends an OTP.",
         "parameters": [
           {
@@ -56,9 +52,7 @@
     },
     "/auth/verify-registration": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -79,9 +73,7 @@
     },
     "/auth/login-user": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -102,9 +94,7 @@
     },
     "/auth/refresh_token": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "responses": {
           "200": {
@@ -115,9 +105,7 @@
     },
     "/auth/get_logged_in_user": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -135,9 +123,7 @@
     },
     "/auth/forget-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -167,9 +153,7 @@
     },
     "/auth/verify-password-otp": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -197,9 +181,7 @@
     },
     "/auth/reset-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "description": "",
         "parameters": [
           {
@@ -227,9 +209,7 @@
     },
     "/payment/webhooks/stripe": {
       "post": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -250,9 +230,7 @@
     },
     "/payment/seller/stripe/onboarding-link": {
       "post": {
-        "tags": [
-          "Payment"
-        ],
+        "tags": ["Payment"],
         "description": "",
         "parameters": [
           {
@@ -270,9 +248,7 @@
     },
     "/shop/seller/shop": {
       "post": {
-        "tags": [
-          "Shop"
-        ],
+        "tags": ["Shop"],
         "description": "",
         "parameters": [
           {
@@ -321,9 +297,7 @@
         }
       },
       "get": {
-        "tags": [
-          "Shop"
-        ],
+        "tags": ["Shop"],
         "description": "",
         "parameters": [
           {
@@ -339,9 +313,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "Shop"
-        ],
+        "tags": ["Shop"],
         "description": "",
         "parameters": [
           {
@@ -374,9 +346,7 @@
     },
     "/shop/shops/{id}": {
       "get": {
-        "tags": [
-          "Shop"
-        ],
+        "tags": ["Shop"],
         "description": "",
         "parameters": [
           {

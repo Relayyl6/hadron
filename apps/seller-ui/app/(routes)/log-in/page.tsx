@@ -63,7 +63,7 @@ export default function LoginPage() {
   })
 
   // Watch current context email from state matrices
-  const currentEmail = loginForm.watch('email') || forgotForm.watch('email')
+
 
   // Handle local storage hydration for remembered state
   useEffect(() => {
@@ -165,10 +165,7 @@ export default function LoginPage() {
     }
   })
 
-  const goToForgotFlow = () => {
-    forgotForm.setValue('email', loginForm.getValues('email'))
-    navigateToStep(1)
-  }
+
 
   return (
     // ─────────────────────────────────────────────────────────────────────────

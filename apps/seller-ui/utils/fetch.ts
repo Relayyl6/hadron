@@ -3,27 +3,51 @@ type FetchOptions = {
   body?: any;
   headers?: Record<string, string>;
   options?: Omit<RequestInit, 'method' | 'body' | 'headers'>;
-  _retry?: boolean; // Added internal flag to prevent infinite refresh loops
+};
+
+// Helper to grab cookie from browser
+const getCookie = (name: string) => {
+  if (typeof document === 'undefined') return '';
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  return '';
 };
 
 export async function apiRequest<T>(
-  endpoint: string, 
-  { method = 'GET', body, headers, options, _retry = false }: FetchOptions = {}
+  endpoint: string,
+  { method = 'GET', body, headers, options }: FetchOptions = {},
 ): Promise<T> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_SERVER_URI || '';
-    
-    const finalUrl = endpoint.startsWith('http') 
-      ? endpoint 
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+    const finalUrl = endpoint.startsWith('http')
+      ? endpoint
       : `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+
+    // If it's a mutation (POST/PUT/PATCH/DELETE), check if we have the CSRF cookie
+    let csrfToken = getCookie('x-csrf-token');
+
+    // If the token is missing and we are trying to post, let's fetch it on the fly first!
+    if (!csrfToken && method !== 'GET') {
+      try {
+        await fetch(`${baseUrl}/api/users/api/csrf-token`, {
+          credentials: 'include',
+        });
+        csrfToken = getCookie('x-csrf-token');
+      } catch (e) {
+        console.warn('Auto-fetch CSRF token failed:', e);
+      }
+    }
 
     const config: RequestInit = {
       method,
       headers: {
         'Content-Type': 'application/json',
+        ...(csrfToken && method !== 'GET' ? { 'x-csrf-token': csrfToken } : {}),
         ...headers,
       },
-      credentials: "include",
+      credentials: 'include',
       ...options,
     };
 
@@ -35,46 +59,9 @@ export async function apiRequest<T>(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
-
-      // AUTOMATIC TOKEN REFRESH LOGIC
-      if (errorMessage === "Access token expired" && !_retry) {
-        try {
-          // Adjust the "/auth/refresh_token" path if your router is mounted differently
-          const refreshUrl = `${baseUrl.replace(/\/$/, '')}/api/users/auth/refresh_token`;
-          
-          const refreshResponse = await fetch(refreshUrl, {
-            method: 'POST',
-            credentials: 'include', // Crucial: this sends the refresh_token cookie
-            headers: { 'Content-Type': 'application/json' },
-          });
-
-          if (!refreshResponse.ok) {
-            // If the refresh token is also expired or invalid, log the user out
-            if (typeof window !== 'undefined') window.location.href = '/login';
-            throw new Error("Session expired. Please log in again.");
-          }
-
-          // The backend successfully set a new access_token cookie.
-          // Retry the original request identically, but flag it so it won't loop.
-          return await apiRequest<T>(endpoint, {
-            method,
-            body,
-            headers,
-            options,
-            _retry: true 
-          });
-
-        } catch (refreshError) {
-          // Fallback redirect if network completely fails during refresh
-          if (typeof window !== 'undefined') window.location.href = '/login';
-          throw refreshError;
-        }
-      }
-      // ==========================================
-
-      // If it's a different error, or the retry failed, throw normally
-      throw new Error(errorMessage);
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`,
+      );
     }
 
     return await response.json();

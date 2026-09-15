@@ -16,6 +16,12 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "paths": {
+      "@hadron/lib/*": ["packages/lib/*"],
+      "@hadron/error-handler": ["packages/error-handler/index.ts"],
+      "@hadron/error-handler/*": ["packages/error-handler/*"],
+      "@hadron/auth-handler/*": ["packages/auth-handler/*"]
+    },
     "customConditions": ["@hadron/source"]
   }
 }
