@@ -20,7 +20,7 @@ export async function generateStaticParams() {
   return paths;
 }
 
-export default async function CategoryPage({ params }: PageProps) {
+export default async function CategoryPage({ params }: any) {
   const { slug } = await params;
   
   // Reconstruct the expected lookup path key

@@ -63,7 +63,7 @@ export default function LoginPage() {
   })
 
   // Watch current context email from state matrices
-  const currentEmail = loginForm.watch('email') || forgotForm.watch('email')
+//  const currentEmail = loginForm.watch('email') || forgotForm.watch('email')
 
   // Handle local storage hydration for remembered state
   useEffect(() => {
@@ -165,10 +165,10 @@ export default function LoginPage() {
     }
   })
 
-  const goToForgotFlow = () => {
-    forgotForm.setValue('email', loginForm.getValues('email'))
-    navigateToStep(1)
-  }
+//  const goToForgotFlow = () => {
+//    forgotForm.setValue('email', loginForm.getValues('email'))
+//    navigateToStep(1)
+//  }
 
   return (
     <main className='flex h-[calc(100vh-68px)] w-full overflow-hidden items-center justify-center bg-gray-50 px-4'>
