@@ -165,10 +165,10 @@ export default function LoginPage() {
     }
   })
 
-//  const goToForgotFlow = () => {
-//    forgotForm.setValue('email', loginForm.getValues('email'))
-//    navigateToStep(1)
-//  }
+  const goToForgotFlow = () => {
+    forgotForm.setValue('email', loginForm.getValues('email'))
+    navigateToStep(1)
+  }
 
   return (
     <main className='flex h-[calc(100vh-68px)] w-full overflow-hidden items-center justify-center bg-gray-50 px-4'>
@@ -205,10 +205,7 @@ export default function LoginPage() {
                   <label className='text-sm font-medium text-gray-700' htmlFor='login-password'>Password</label>
                   <button
                     type='button'
-                    onClick={() => {
-                      forgotForm.setValue('email', loginForm.getValues('email'))
-                      navigateToStep(1)
-                    }}
+                    onClick={goToForgotFlow}
                     className='text-xs font-medium text-gray-400 hover:text-gray-900 transition-colors'
                   >
                     Forgot password?
