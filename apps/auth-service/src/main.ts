@@ -36,6 +36,7 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
     httpOnly: false,
     sameSite: 'lax', // <-- CHANGED from "strict" to allow cross-port requests on localhost
     secure: process.env.NODE_ENV === 'production', // false on localhost, true in production
+    path: '/', // CRITICAL: Ensure cookie is available across all paths
   },
   getSessionIdentifier: (req) => req.cookies?.sessionId || 'stateless',
 });

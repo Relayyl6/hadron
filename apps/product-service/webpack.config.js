@@ -18,6 +18,7 @@ module.exports = {
         '../../packages/error-handler',
       ),
       '@hadron/auth-handler': resolve(__dirname, '../../packages/auth-handler'),
+      '@hadron/imagekit': resolve(__dirname, '../../packages/imagekit'),
     },
     extensions: ['.ts', '.js'],
   },

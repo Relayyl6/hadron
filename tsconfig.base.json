@@ -20,7 +20,8 @@
       "@hadron/lib/*": ["packages/lib/*"],
       "@hadron/error-handler": ["packages/error-handler/index.ts"],
       "@hadron/error-handler/*": ["packages/error-handler/*"],
-      "@hadron/auth-handler/*": ["packages/auth-handler/*"]
+      "@hadron/auth-handler/*": ["packages/auth-handler/*"],
+      "@hadron/imagekit": ["packages/imagekit/index.ts"]
     },
     "customConditions": ["@hadron/source"]
   }

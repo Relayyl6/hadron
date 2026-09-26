@@ -43,7 +43,7 @@ const SideBarWrapper = () => {
     activeSideBar === route ? '#0085ff' : '#969696';
 
   return (
-    <Sidebar.Wrapper className="flex flex-col h-full">
+    <div className="flex flex-col h-full px-5 py-4 w-full">
       {/* Sidebar Header with Logo (Won't shrink) */}
       <Sidebar.Header className="shrink-0">
         <Link href="/" className="flex justify-center text-center gap-2">
@@ -84,7 +84,7 @@ const SideBarWrapper = () => {
               Create a new product
             </Link>
             <Link
-              href="/dashboard/products"
+              href="/dashboard/products/all"
               className="px-3.5 py-2.5 text-sm text-slate-400 rounded-md hover:text-white hover:bg-[#2b2f31]/60 transition-colors block"
             >
               View all products
@@ -235,7 +235,7 @@ const SideBarWrapper = () => {
           </div>
         </div>
       </Sidebar.Footer>
-    </Sidebar.Wrapper>
+    </div>
   );
 };
 

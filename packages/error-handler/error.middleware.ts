@@ -30,12 +30,45 @@ const normalizeError = (err: Error): AppError => {
     }
 
 
-    if (
-        err.message.includes("database") ||
-        err.message.includes("connection")
-    ) {
+    // DNS Lookup / No Internet Error
+    if (err.message.includes("ENOTFOUND")) {
         return new DatabaseError(
-            "Database operation failed"
+            "Network request failed. Please check your internet connection and try again."
+        );
+    }
+
+    // Connection Timeout
+    if (err.message.includes("ETIMEDOUT")) {
+        return new DatabaseError(
+            "Connection timed out. The server took too long to respond."
+        );
+    }
+
+    // Connection Refused (Server Offline)
+    if (err.message.includes("ECONNREFUSED")) {
+        return new DatabaseError(
+            "Connection refused. The database or cache server may be offline."
+        );
+    }
+
+    // Database Unreachable
+    if (err.message.includes("Can't reach database") || err.name === "PrismaClientInitializationError") {
+        return new DatabaseError(
+            "Database connection failed. We cannot reach the database server right now."
+        );
+    }
+
+    // General Connection Errors
+    if (err.message.includes("connection")) {
+        return new DatabaseError(
+            "An unexpected connection error occurred. Please try again later."
+        );
+    }
+
+    // General Database Errors
+    if (err.message.includes("database")) {
+        return new DatabaseError(
+            "A database operation failed. Please try again later."
         );
     }
 

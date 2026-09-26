@@ -5,8 +5,9 @@ import { errorMiddleware } from '../../../packages/error-handler/error.middlewar
 import cookieParser from 'cookie-parser';
 import { doubleCsrf } from 'csrf-csrf'; // 1. Import CSRF package
 import productRouter from './routes/product.routes.js';
-// import swaggerUi from "swagger-ui-express";
-// const swaggerDocument = require("./swagger-output.json");
+import "./jobs/product-cron-job.js"
+import swaggerUi from "swagger-ui-express";
+const swaggerDocument = require("./swagger-output.json");
 
 const app = express();
 
@@ -36,9 +37,10 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET || 'your_secret_key',
   cookieName: 'x-csrf-token',
   cookieOptions: {
-    httpOnly: true,
-    sameSite: 'strict',
+    httpOnly: false,
+    sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
+    path: '/',
   },
   getSessionIdentifier: (req) => req.cookies?.sessionId || 'stateless',
 });
@@ -59,11 +61,11 @@ app.get('/', (req, res) => {
   res.send({ message: 'Hello API' });
 });
 
-// app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-// app.get("/docs-json", (req, res) => {
-//   /* #swagger.ignore = true */
-//   res.json(swaggerDocument);
-// });
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get("/docs-json", (req, res) => {
+  /* #swagger.ignore = true */
+  res.json(swaggerDocument);
+});
 
 app.use('/product', productRouter);
 

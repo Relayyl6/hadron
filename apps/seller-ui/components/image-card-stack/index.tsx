@@ -6,7 +6,7 @@ import { LayoutGrid, GalleryHorizontal } from 'lucide-react';
 
 export interface StackImage {
   id: string;
-  previewUrl: string | null;
+  url: string | null;
 }
 
 export type ViewMode = 'stack' | 'grid';
@@ -28,8 +28,8 @@ const ImageCardStack = ({
   onToggleViewMode,
 }: Props) => {
   const validImages = images.filter(
-    (img): img is StackImage & { previewUrl: string } =>
-      img.previewUrl !== null,
+    (img): img is StackImage & { url: string } =>
+      img.url !== null,
   );
   const currentActiveId = activeId ?? validImages[0]?.id;
 
@@ -82,7 +82,7 @@ const ImageCardStack = ({
                   }}
                 >
                   <img
-                    src={img.previewUrl}
+                    src={img.url}
                     alt=""
                     className="w-full h-full object-cover"
                   />
@@ -108,7 +108,7 @@ const ImageCardStack = ({
                 }`}
               >
                 <img
-                  src={img.previewUrl}
+                  src={img.url}
                   alt=""
                   className="w-full h-full object-cover"
                 />

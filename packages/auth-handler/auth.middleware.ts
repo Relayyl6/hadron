@@ -75,7 +75,11 @@ export const authenticate = async (
           },
         },
         // Only fetch the profile that matches their role
-        sellerProfile: decoded.role === 'SELLER' || decoded.role === 'ADMIN',
+        sellerProfile: (decoded.role === 'SELLER' || decoded.role === 'ADMIN') ? {
+          include: {
+            shop: true,
+          },
+        } : false,
         customerProfile: decoded.role === 'CUSTOMER',
       };
 
@@ -94,7 +98,7 @@ export const authenticate = async (
         'Account permissions have changed. Please login again.',
       );
 
-    req.user = user;
+    (req as any).user = user;
 
     next();
   } catch (error) {

@@ -5,51 +5,87 @@ type FetchOptions = {
   options?: Omit<RequestInit, 'method' | 'body' | 'headers'>;
 };
 
-// Helper to grab cookie from browser
-const getCookie = (name: string) => {
-  if (typeof document === 'undefined') return '';
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift();
-  return '';
-};
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+let isFetchingCsrf = false;
+let csrfPromise: Promise<string | null> | null = null;
+
+async function getCsrfToken(baseUrl: string): Promise<string | null> {
+  // 1. Check in-memory cache / active promise
+  if (isFetchingCsrf && csrfPromise) return csrfPromise;
+
+  // 2. Check localStorage cache
+  if (typeof window !== 'undefined') {
+    const cachedToken = localStorage.getItem('csrfToken');
+    if (cachedToken) return cachedToken;
+  }
+
+  // 3. Fetch fresh token if not cached
+  isFetchingCsrf = true;
+  csrfPromise = fetch(`${baseUrl}/api/users/api/csrf-token?_t=${Date.now()}`, {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store', // CRITICAL: Prevent browser from caching this GET request!
+  })
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+      if (data && data.csrfToken) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('csrfToken', data.csrfToken);
+        }
+        return data.csrfToken;
+      }
+      return null;
+    })
+    .catch(() => null)
+    .finally(() => {
+      isFetchingCsrf = false;
+      csrfPromise = null;
+    });
+
+  return csrfPromise;
+}
 
 export async function apiRequest<T>(
   endpoint: string,
   { method = 'GET', body, headers, options }: FetchOptions = {},
+  _retryCount = 0,
+  fileName?: string
 ): Promise<T> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+    // Client-side requests use relative paths ('') so Next.js rewrites proxy them to the backend.
+    // This solves all CORS and SameSite cookie issues perfectly for both dev and prod.
+    // Server-side (SSR) must use the absolute URL because Node fetch doesn't support relative URLs.
+    const baseUrl = typeof window !== 'undefined' 
+      ? '' 
+      : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:4000');
 
     const finalUrl = endpoint.startsWith('http')
       ? endpoint
       : `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
 
-    // If it's a mutation (POST/PUT/PATCH/DELETE), check if we have the CSRF cookie
-    let csrfToken = getCookie('x-csrf-token');
-
-    // If the token is missing and we are trying to post, let's fetch it on the fly first!
-    if (!csrfToken && method !== 'GET') {
-      try {
-        await fetch(`${baseUrl}/api/users/api/csrf-token`, {
-          credentials: 'include',
-        });
-        csrfToken = getCookie('x-csrf-token');
-      } catch (e) {
-        console.warn('Auto-fetch CSRF token failed:', e);
-      }
-    }
-
     const config: RequestInit = {
       method,
       headers: {
         'Content-Type': 'application/json',
-        ...(csrfToken && method !== 'GET' ? { 'x-csrf-token': csrfToken } : {}),
+        ...(fileName ? { 'x-file-name': fileName } : {}),
         ...headers,
       },
       credentials: 'include',
       ...options,
     };
+
+    // Inject CSRF token for mutations
+    if (method !== 'GET') {
+      const token = await getCsrfToken(baseUrl);
+      if (token) {
+        config.headers = {
+          ...config.headers,
+          'x-csrf-token': token,
+        };
+      }
+    }
 
     if (body && method !== 'GET') {
       config.body = typeof body === 'string' ? body : JSON.stringify(body);
@@ -57,8 +93,58 @@ export async function apiRequest<T>(
 
     const response = await fetch(finalUrl, config);
 
+    // Auto-refresh token interceptor
+    if (response.status === 401 && _retryCount === 0) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        
+        refreshPromise = (async () => {
+          try {
+            const csrf = await getCsrfToken(baseUrl);
+            const res = await fetch(`${baseUrl}/api/users/auth/refresh_token`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 
+                'Content-Type': 'application/json',
+                ...(csrf ? { 'x-csrf-token': csrf } : {})
+              }
+            });
+            return res.ok;
+          } catch (err) {
+            return false;
+          }
+        })().finally(() => {
+          isRefreshing = false;
+          refreshPromise = null;
+        });
+      }
+
+      const refreshed = await refreshPromise;
+      
+      if (refreshed) {
+        // Retry the original request exactly once
+        return apiRequest<T>(endpoint, { method, body, headers, options }, 1);
+      } else {
+        // If refresh fails, they really need to log in
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('csrfToken');
+          window.location.href = '/log-in';
+        }
+        throw new Error('Session expired');
+      }
+    }
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      
+      // Handle invalid CSRF token
+      if (response.status === 403 && _retryCount === 0 && errorData?.message?.toLowerCase().includes('csrf')) {
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('csrfToken');
+        }
+        return apiRequest<T>(endpoint, { method, body, headers, options }, 1);
+      }
+
       throw new Error(
         errorData.message || `HTTP error! status: ${response.status}`,
       );

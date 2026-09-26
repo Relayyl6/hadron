@@ -10,6 +10,6 @@ export const setCookie = (
     httpOnly: true,
     sameSite: 'lax', // Use lax to allow cross-port requests on localhost without requiring secure: true
     secure: process.env.NODE_ENV === 'production',
-    maxAge: maxAge,
+    maxAge: maxAge, path: '/',
   });
 };

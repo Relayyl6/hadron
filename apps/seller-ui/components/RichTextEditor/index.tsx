@@ -251,9 +251,9 @@ const DEFAULT_FORMATS = [
  * Calculate editor statistics (characters, words, paragraphs)
  */
 const calculateStats = (html: string): EditorStats => {
-  // Remove HTML tags
-  const safeHtml = html ?? '';   // same trick — undefined becomes ''
-  const text = safeHtml.replace(/<[^>]*>/g, '').trim();
+  // Remove HTML tags and entities, replacing them with spaces to prevent word merging
+  const safeHtml = html ?? '';   
+  const text = safeHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').trim();
 
   // Remove multiple spaces
   const cleanText = text.replace(/\s+/g, ' ');

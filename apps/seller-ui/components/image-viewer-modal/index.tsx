@@ -12,10 +12,11 @@ import {
 
 export interface ViewerImage {
   id: string;
-  previewUrl: string;
+  url: string;
 }
 
 interface Props {
+  pictureLoading: boolean;
   images: ViewerImage[];
   activeId: string;
   onSelect: (id: string) => void;
@@ -24,7 +25,13 @@ interface Props {
 
 type ViewMode = 'filmstrip' | 'stack';
 
-const ImageViewerModal = ({ images, activeId, onSelect, onClose }: Props) => {
+const ImageViewerModal = ({ 
+  pictureLoading,
+  images, 
+  activeId, 
+  onSelect, 
+  onClose 
+}: Props) => {
   const [mode, setMode] = useState<ViewMode>('filmstrip');
 
   const activeIndex = Math.max(
@@ -78,6 +85,7 @@ const ImageViewerModal = ({ images, activeId, onSelect, onClose }: Props) => {
         </button>
         <button
           type="button"
+          disabled={pictureLoading}
           onClick={onClose}
           aria-label="Close preview"
           className="bg-black/60 hover:bg-black/80 rounded-full p-2"
@@ -117,7 +125,7 @@ const ImageViewerModal = ({ images, activeId, onSelect, onClose }: Props) => {
       {/* THE FIX: Removed w-full h-full from the image so it shrinks to fit the visible pixels */}
       <div className="flex-1 flex items-center justify-center w-full relative">
         <img
-          src={active.previewUrl}
+          src={active.url}
           alt="Full size preview"
           onClick={(e) => e.stopPropagation()} // Clicking the actual picture stops the close event
           className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
@@ -142,7 +150,7 @@ const ImageViewerModal = ({ images, activeId, onSelect, onClose }: Props) => {
                 }`}
               >
                 <img
-                  src={img.previewUrl}
+                  src={img.url}
                   alt=""
                   className="w-full h-full object-cover"
                 />
@@ -171,7 +179,7 @@ const ImageViewerModal = ({ images, activeId, onSelect, onClose }: Props) => {
                     }}
                   >
                     <img
-                      src={img.previewUrl}
+                      src={img.url}
                       alt=""
                       className="w-full h-full object-cover"
                     />

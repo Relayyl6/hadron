@@ -10,6 +10,22 @@ const nextConfig = {
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
   nx: {},
+  images: {
+    remotePatterns: [
+      {
+        hostname: 'ik.imagekit.io',
+      }
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        // Proxy all /api requests to the backend (falling back to 127.0.0.1 for local dev)
+        destination: `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:4000'}/api/:path*`,
+      },
+    ];
+  },
 };
 
 const plugins = [

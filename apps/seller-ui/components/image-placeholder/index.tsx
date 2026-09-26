@@ -7,20 +7,22 @@ import { X, ZoomIn } from 'lucide-react';
 interface Props {
   size: string;
   small: boolean;
+  pictureLoading: boolean;
   id: string;
-  previewUrl: string | null;
+  url: string | null;
   onImageChange: (file: File | null, id: string) => void;
   onRemove: (id: string) => void;
   onOpenViewer: () => void;
 }
 
-// No local preview state anymore — previewUrl is owned entirely by the
+// No local preview state anymore — url is owned entirely by the
 // parent's images array, so this component just renders what it's given.
 const ImagePlaceholder = ({
   size,
   small,
+  pictureLoading,
   id,
-  previewUrl,
+  url,
   onImageChange,
   onRemove,
   onOpenViewer,
@@ -40,7 +42,7 @@ const ImagePlaceholder = ({
   };
 
   const handleImageClick = (e: React.MouseEvent) => {
-    if (previewUrl) {
+    if (url) {
       e.preventDefault();
       onOpenViewer();
     }
@@ -63,29 +65,13 @@ const ImagePlaceholder = ({
         onChange={handleFileChange}
       />
 
-      {previewUrl ? (
+      {url ? (
         <>
           <img
-            src={previewUrl}
+            src={url}
             alt="Product"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
-          <div className="absolute top-2 right-2 flex gap-1">
-            <span
-              aria-label="Preview full size"
-              className="bg-black/60 rounded-full p-1"
-            >
-              <ZoomIn size={16} className="text-white" />
-            </span>
-            <button
-              type="button"
-              onClick={handleRemove}
-              aria-label="Remove image"
-              className="bg-black/60 hover:bg-black/80 rounded-full p-1"
-            >
-              <X size={16} className="text-white" />
-            </button>
-          </div>
         </>
       ) : (
         <span className="text-gray-400 text-sm text-center px-2">

@@ -21,7 +21,7 @@ export async function loginRequest(
       method: 'POST',
       body: { email, password },
       headers: {
-        'x-csrf-token': getCsrfToken(),
+        
       },
     },
   );
@@ -38,7 +38,7 @@ export async function sendResetTokenRequest(
       method: 'POST',
       body: { email },
       headers: {
-        'x-csrf-token': getCsrfToken(),
+        
       },
     },
   );
@@ -55,7 +55,7 @@ export async function verifyTokenRequest(
       method: 'POST',
       body: { email, otp },
       headers: {
-        'x-csrf-token': getCsrfToken(),
+        
       },
     },
   );
@@ -72,7 +72,7 @@ export async function resetPasswordRequest(
       method: 'POST',
       body: { email, newPassword },
       headers: {
-        'x-csrf-token': getCsrfToken(),
+        
       },
     },
   );

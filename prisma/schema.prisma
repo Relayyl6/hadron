@@ -19,155 +19,231 @@ enum BusinessType {
   SOLE_PROPRIETOR
 }
 
+enum ProductStatus {
+  Active
+  Pending
+  Draft
+}
+
 enum Gender {
   MALE
   FEMALE
   PREFER_NOT_TO_SAY
 }
 
-model images {
-  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
-  file_id               String
-  url                   String
-
-  // an image can belong to EITHER a user avatar OR a shop avatar — both optional
-  userId                String?           @unique @db.ObjectId
-  users                 users?            @relation(fields: [userId], references: [id])
-
-  shopId                String?           @unique @db.ObjectId
-  shops                 shops?            @relation(fields: [shopId], references: [id])
+// --- Composite Types for Products ---
+type ProductColor {
+  name    String
+  hexCode String
 }
 
-model users {
-  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
-  name                  String
-  email                 String            @unique
-  password              String
-  role                  Role
+type ProductImage {
+  file_id String
+  url     String
+}
 
-  following             String[]
-  avatar                images?
+type ProductSpecification {
+  name  String
+  value String
+}
 
-  sellerProfile         SellerProfile?
-  customerProfile       CustomerProfile?
-
-  shopReviews           shopReviews[]
-
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+type ProductCustomProperty {
+  propertyName String
+  values       String[]
 }
 
 type Address {
-  street                String
-  city                  String
-  state                 String
-  country               String
-  postalCode            String?
+  street     String
+  city       String
+  state      String
+  country    String
+  postalCode String?
 }
 
 type Preferences {
-  currency              String?
-  language              String?
-  marketingConsent      Boolean?
-  pushNotifications     Boolean?
+  currency          String?
+  language          String?
+  marketingConsent  Boolean?
+  pushNotifications Boolean?
 }
 
 type PayoutBankDetails {
-  bankName              String
-  accountNumber         String
-  accountName           String
+  bankName      String
+  accountNumber String
+  accountName   String
+}
+
+// --- Models ---
+
+model images {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  file_id String
+  url     String
+
+  userId  String? @unique @db.ObjectId
+  users   users?  @relation(fields: [userId], references: [id])
+
+  shopId  String? @unique @db.ObjectId
+  shops   shops?  @relation(fields: [shopId], references: [id])
+}
+
+model users {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  name     String
+  email    String @unique
+  password String
+  role     Role
+
+  following String[]
+  avatar    images?
+
+  sellerProfile   SellerProfile?
+  customerProfile CustomerProfile?
+
+  shopReviews shopReviews[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CustomerProfile {
-  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
-  phoneNumber           String?
-  dateOfBirth           String?
-  gender                Gender?
-  preferences           Preferences?
-  address               Address?
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber String?
+  dateOfBirth String?
+  gender      Gender?
+  preferences Preferences?
+  address     Address?
 
-  userId                String             @unique @db.ObjectId
-  user                  users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique @db.ObjectId
+  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model SellerProfile {
-  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
-  phoneNumber           String?
-  country               String
-  businessName          String
-  businessType          BusinessType
-  taxId                 String?
-  storeDescription      String?
-  payoutBankDetails     PayoutBankDetails?
-  isVerified            Boolean            @default(false)
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  phoneNumber          String?
+  country              String
+  businessName         String
+  businessType         BusinessType
+  taxId                String?
+  storeDescription     String?
+  payoutBankDetails    PayoutBankDetails?
+  isVerified           Boolean            @default(false)
 
-  stripeAccountId       String?            @unique
-  stripeOnboarded       Boolean            @default(false)
-  stripePayoutsEnabled  Boolean            @default(false)
+  stripeAccountId      String?            @unique
+  stripeOnboarded      Boolean            @default(false)
+  stripePayoutsEnabled Boolean            @default(false)
 
-  userId                String             @unique @db.ObjectId
-  user                  users              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique @db.ObjectId
+  user   users  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  shop                  shops?
-
-  // Add this line to complete the relationship
-  discountCodes         discount_codes[]
+  shop          shops?
+  discountCodes discount_codes[]
 }
 
 model shops {
-  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
-  name                  String          
-  bio                   String?          
-  category              String?          
-  avatar                images?          
-  coverBanner           String?          
-  address               String          
-  opening_hours         String?          
-  website               String?          
-  socialLinks           Json[]          
-  ratings               Float              @default(0)
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String  
+  bio           String? 
+  category      String? 
+  avatar        images? 
+  coverBanner   String? 
+  address       String  
+  opening_hours String? 
+  website       String? 
+  socialLinks   Json[]  
+  ratings       Float   @default(0)
 
-  reviews               shopReviews[]
+  reviews       shopReviews[]
+  products      products[]      // Tying products directly to the shop
 
-  sellerProfileId       String             @unique @db.ObjectId
-  sellerProfile         SellerProfile      @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
+  sellerProfileId String        @unique @db.ObjectId
+  sellerProfile   SellerProfile @relation(fields: [sellerProfileId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model products {
+  id                    String                  @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // Basic Info
+  title                 String
+  slug                  String                  @unique
+  description           String
+  detailed_description  String
+  tags                  String[]                  
+  warranty              String
+  brand                 String?
+  cash_on_delivery      String                  
+  video_url             String?
+  
+  // Pricing & Inventory
+  sale_price            Float
+  regularPrice          Float
+  stock                 Int
+  
+  // Media & Variants
+  images                ProductImage[]
+  sizes                 String[]
+  
+  // Category Hierarchy
+  category              String
+  subcategory           String?
+  subSubCategory        String?
+
+  // Complex Embedded Data
+  colors                ProductColor[]          
+  custom_specifications ProductSpecification[]  
+  custom_properties     ProductCustomProperty[] 
+  
+  // Discounts
+  discount_codes        String[]      
+  starting_date         DateTime?
+  end_date              DateTime?
+  ratings               Float?                  @default(5) 
+  isDeleted             Boolean?                @default(false)
+  status                ProductStatus           @default(Active)
+
+  // --- Relations ---
+  shopId                String                  @db.ObjectId
+  shop                  shops                   @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  deletedAt             DateTime?                
 }
 
 model shopReviews {
-  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
-  rating                Float            
-  reviews               String             
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  rating    Float  
+  reviews   String 
             
-  userId                String             @db.ObjectId
-  user                  users              @relation(fields: [userId], references: [id])
+  userId    String @db.ObjectId
+  user      users  @relation(fields: [userId], references: [id])
             
-  shopsId               String             @db.ObjectId
-  shops                 shops              @relation(fields: [shopsId], references: [id], onDelete: Cascade)
+  shopsId   String @db.ObjectId
+  shops     shops  @relation(fields: [shopsId], references: [id], onDelete: Cascade)
 
-  createdAt             DateTime           @default(now())
-  updatedAt             DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model site_configs {
-  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
-  categories            String[]
-  subCategories         Json
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  categories    String[]
+  subCategories Json
 }
 
 model discount_codes {
-  id              String             @id @default(auto()) @map("_id") @db.ObjectId
-  public_name     String
-  discountType    String
-  discountValue   Float
-  discountCode    String             @unique 
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  public_name   String
+  discountType  String
+  discountValue Float
+  discountCode  String   @unique 
   
-  // The relation linking to the SellerProfile
-  sellerId        String             @db.ObjectId
-  sellerProfile   SellerProfile      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId      String         @db.ObjectId
+  sellerProfile SellerProfile  @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }

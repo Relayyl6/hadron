@@ -23,9 +23,10 @@ async function getCsrfToken(baseUrl: string): Promise<string | null> {
 
   // 3. Fetch fresh token if not cached
   isFetchingCsrf = true;
-  csrfPromise = fetch(`${baseUrl}/api/users/api/csrf-token`, {
+  csrfPromise = fetch(`${baseUrl}/api/users/api/csrf-token?_t=${Date.now()}`, {
     method: 'GET',
     credentials: 'include',
+    cache: 'no-store', // CRITICAL: Prevent browser from caching this GET request!
   })
     .then(res => res.ok ? res.json() : null)
     .then(data => {
@@ -49,10 +50,16 @@ async function getCsrfToken(baseUrl: string): Promise<string | null> {
 export async function apiRequest<T>(
   endpoint: string,
   { method = 'GET', body, headers, options }: FetchOptions = {},
-  _retryCount = 0
+  _retryCount = 0,
+  fileName?: string
 ): Promise<T> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000';
+    // Client-side requests use relative paths ('') so Next.js rewrites proxy them to the backend.
+    // This solves all CORS and SameSite cookie issues perfectly for both dev and prod.
+    // Server-side (SSR) must use the absolute URL because Node fetch doesn't support relative URLs.
+    const baseUrl = typeof window !== 'undefined' 
+      ? '' 
+      : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:4000');
 
     const finalUrl = endpoint.startsWith('http')
       ? endpoint
@@ -62,6 +69,7 @@ export async function apiRequest<T>(
       method,
       headers: {
         'Content-Type': 'application/json',
+        ...(fileName ? { 'x-file-name': fileName } : {}),
         ...headers,
       },
       credentials: 'include',

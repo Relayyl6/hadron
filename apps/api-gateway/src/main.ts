@@ -74,7 +74,10 @@ const proxyOptions = {
 
 app.use(
   '/api/users',
-  proxy(process.env.USER_SERVICE_URL || 'http://localhost:6001', proxyOptions),
+  proxy(
+    process.env.USER_SERVICE_URL || 'http://localhost:6001', 
+    proxyOptions
+  ),
 );
 app.use(
   '/api/products',

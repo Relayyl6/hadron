@@ -12,6 +12,7 @@ const axiosInstance = axios.create({
 
 // single in-flight refresh, shared by everyone who hits a 401
 let refreshPromise: Promise<void> | null = null;
+let csrfTokenStr = '';
 
 const handleLogOut = () => {
   if (window.location.pathname !== '/log-in') {
@@ -22,6 +23,31 @@ const handleLogOut = () => {
 const refreshAccessToken = async () => {
   await axiosInstance.post('/api/users/auth/refresh_token');
 };
+
+axiosInstance.interceptors.request.use(async (config) => {
+  if (config.method && config.method.toUpperCase() !== 'GET') {
+    if (!csrfTokenStr) {
+      try {
+        const baseUrl = typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:4000');
+        const res = await fetch(`${baseUrl}/api/users/api/csrf-token?_t=${Date.now()}`, { credentials: 'include', cache: 'no-store' });
+        const data = await res.json();
+        if (data?.csrfToken) csrfTokenStr = data.csrfToken;
+      } catch (e) {
+        console.warn('Auto-fetch CSRF for axios failed:', e);
+      }
+    }
+    if (csrfTokenStr) {
+      config.headers['x-csrf-token'] = csrfTokenStr;
+    }
+  }
+  
+  // Make sure we use relative paths in the browser for the Next.js proxy
+  if (typeof window !== 'undefined' && config.baseURL) {
+    config.baseURL = '';
+  }
+  
+  return config;
+});
 
 axiosInstance.interceptors.response.use(
   (response) => response,

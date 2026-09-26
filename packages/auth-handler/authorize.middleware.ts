@@ -7,8 +7,8 @@ export const authorize = (...roles: Array<"CUSTOMER"|"SELLER"|"ADMIN">) => {
         res:Response,
         next:NextFunction
     )=>{
-        if(!req.user) return next(new AuthError("Authentication required"));
-        if(!roles.includes(req.user.role)) return next(new ForbiddenError("You do not have permission to access this resource"));
+        if(!(req as any).user) return next(new AuthError("Authentication required"));
+        if(!roles.includes((req as any).user.role)) return next(new ForbiddenError("You do not have permission to access this resource"));
         next();
     };
 

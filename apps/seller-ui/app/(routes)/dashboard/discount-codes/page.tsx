@@ -207,102 +207,117 @@ const DiscountPage = () => {
 
             {/* Create Discount Modal */}
             {showModal && (
-                <div className='fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4'>
-                    <div className='bg-gray-900 border border-gray-700 p-6 rounded-xl w-full max-w-[450px] shadow-2xl'> 
-                        <div className='flex justify-between items-center border-b border-gray-800 pb-4 mb-4'>
-                            <h3 className='text-xl text-white font-semibold'>
-                                Create Discount Code
-                            </h3>
-                            <button 
-                                onClick={() => setShowModal(false)}
-                                className='text-gray-400 hover:text-white transition'
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-[#18181b] border border-gray-800 p-7 rounded-2xl w-full max-w-[450px] shadow-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl text-white font-semibold tracking-tight">
+                        Create Discount Code
+                        </h3>
+                        <button
+                        onClick={() => setShowModal(false)}
+                        className="p-2 bg-gray-800/50 hover:bg-gray-800 text-gray-400 hover:text-white rounded-full transition-colors"
+                        >
+                        <X size={18} />
+                        </button>
+                    </div>
+
+                    <form onSubmit={handleCreateSubmit} className="flex flex-col gap-5">
+                        {/* Public Name */}
+                        <div>
+                        <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                            Public Name (e.g. Summer Sale)
+                        </label>
+                        <input
+                            type="text"
+                            required
+                            value={formData.public_name}
+                            onChange={(e) => {
+                            const capitalizedValue = e.target.value.replace(/\b\w/g, (char) => char.toUpperCase());
+                            setFormData({ ...formData, public_name: capitalizedValue });
+                            }}
+                            className="w-full bg-[#0f0f11] border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            placeholder="Summer Sale 2024"
+                        />
+                        </div>
+
+                        {/* Type and Value Grid */}
+                        <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                Type
+                            </label>
+                            <select
+                                value={formData.discountType}
+                                onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
+                                className="w-full bg-[#0f0f11] border border-gray-800 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none"
                             >
-                                <X size={20} />
+                                <option value="percentage">Percentage (%)</option>
+                                <option value="fixed">Flat Amount ($)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                                Value
+                            </label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                value={formData.discountValue}
+                                onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                                className="w-full bg-[#0f0f11] border border-gray-800 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                placeholder={formData.discountType === 'percentage' ? "20" : "15"}
+                            />
+                        </div>
+                        </div>
+
+                        {/* Discount Code */}
+                        <div>
+                        <label className="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+                            Discount Code
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                required
+                                value={formData.discountCode}
+                                onChange={(e) => setFormData({ ...formData, discountCode: e.target.value.toUpperCase() })}
+                                className="flex-1 bg-[#0f0f11] border border-gray-800 rounded-xl px-4 py-3 text-white font-mono placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                placeholder="SUMMER20"
+                                />
+                                <button
+                                type="button"
+                                onClick={handleGenerateDiscountCode}
+                                className="px-4 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/20 rounded-xl transition-colors flex items-center justify-center group"
+                                title="Auto-generate from Title"
+                            >
+                            <Wand2 size={18} className="group-hover:scale-110 transition-transform" />
                             </button>
                         </div>
-                        
-                        <form onSubmit={handleCreateSubmit} className='flex flex-col gap-4'>
-                            <div>
-                                <label className='block text-sm text-gray-300 mb-1'>Public Name (e.g. Summer Sale)</label>
-                                <input 
-                                    type="text" 
-                                    required
-                                    value={formData.public_name}
-                                    onChange={(e) => setFormData({...formData, public_name: e.target.value})}
-                                    className='w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500'
-                                    placeholder="Summer Sale 2024"
-                                />
-                            </div>
+                        </div>
 
-                            <div className='grid grid-cols-2 gap-4'>
-                                <div>
-                                    <label className='block text-sm text-gray-300 mb-1'>Type</label>
-                                    <select 
-                                        value={formData.discountType}
-                                        onChange={(e) => setFormData({...formData, discountType: e.target.value})}
-                                        className='w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500'
-                                    >
-                                        <option value="percentage">Percentage (%)</option>
-                                        <option value="fixed">Flat Amount ($)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className='block text-sm text-gray-300 mb-1'>Value</label>
-                                    <input 
-                                        type="number" 
-                                        required
-                                        min="1"
-                                        value={formData.discountValue}
-                                        onChange={(e) => setFormData({...formData, discountValue: e.target.value})}
-                                        className='w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-blue-500'
-                                        placeholder={formData.discountType === 'percentage' ? "20" : "15"}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className='block text-sm text-gray-300 mb-1'>Discount Code</label>
-                                <div className='flex gap-2'>
-                                    <input 
-                                        type="text" 
-                                        required
-                                        value={formData.discountCode}
-                                        onChange={(e) => setFormData({...formData, discountCode: e.target.value.toUpperCase()})}
-                                        className='w-full bg-gray-800 border border-gray-700 rounded-lg p-2.5 text-white font-mono focus:outline-none focus:border-blue-500'
-                                        placeholder="SUMMER20"
-                                    />
-                                    <button
-                                      type="button"
-                                      onClick={handleGenerateDiscountCode}
-                                      className="h-[50px] px-4 bg-[#18181b] hover:bg-gray-800 text-[#80Deea] border border-gray-700 rounded-xl transition-colors flex items-center justify-center whitespace-nowrap"
-                                      title="Auto-generate from Title"
-                                    >
-                                      <Wand2 size={18} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className='flex justify-end gap-3 mt-4'>
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className='px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition'
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    type="submit"
-                                    disabled={createMutation.isPending}
-                                    className='px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition flex items-center gap-2 disabled:opacity-50'
-                                >
-                                    {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
-                                    {createMutation.isPending ? 'Saving...' : 'Create'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>  
+                        {/* Actions */}
+                        <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-800/50">
+                        <button
+                            type="button"
+                            onClick={() => setShowModal(false)}
+                            className="px-5 py-2.5 text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 rounded-xl transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={createMutation.isPending}
+                            className="px-6 py-2.5 text-sm font-medium bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-lg shadow-blue-600/20 disabled:opacity-50 disabled:shadow-none flex items-center gap-2 active:scale-[0.98]"
+                        >
+                            {createMutation.isPending && <Loader2 size={16} className="animate-spin" />}
+                            {createMutation.isPending ? 'Saving...' : 'Create Code'}
+                        </button>
+                        </div>
+                    </form>
+                    </div>
                 </div>
-            )}
+                )}
         </div>
     )
 }
