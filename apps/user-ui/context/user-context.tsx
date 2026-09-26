@@ -10,8 +10,8 @@ export interface User {
     email: string;
     role: "CUSTOMER" | "SELLER" | "ADMIN";
     following: string[];
-    createdAt: string | Date;
-    updatedAt: string | Date;
+    createdAt: string;
+    updatedAt: string;
     avatar?: { id: string; url: string } | null;
     [key: string]: any;
 }
