@@ -1,5 +1,5 @@
 import { apiRequest } from '@/utils/fetch';
-import type { User } from '../../context/user-context';
+// import removed
 
 // Helper to grab token locally inside the utility file
 const getCsrfToken = () => {
@@ -14,7 +14,7 @@ const getCsrfToken = () => {
 export async function loginRequest(
   email: string,
   password: string,
-): Promise<User> {
+): Promise<any> {
   const data = await apiRequest<BackendLoginResponse>(
     '/api/users/auth/login-user',
     {

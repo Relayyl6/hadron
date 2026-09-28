@@ -89,7 +89,7 @@ export function parseAddressString(rawAddress?: string): StructuredAddress {
              /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i.test(clean) || // UK
              /^\d{3}-\d{3}$/.test(clean) ||       // Russian
              /^\d{5}-\d{3}$/.test(clean) ||       // Brazilian
-             /^[A-Z0-9\-]+$/i.test(clean) && clean.length >= 4 && clean.length <= 10; // Alphanumeric
+             /^[A-Z0-9-]+$/i.test(clean) && clean.length >= 4 && clean.length <= 10; // Alphanumeric
     };
 
     if (isPostalCode(lastPart)) {

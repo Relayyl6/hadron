@@ -55,8 +55,8 @@ const ProductPage = () => {
     const [globalFilter, setGlobalFilter] = useState("");
     const [selectedProduct, setSelectedProduct] = useState<any>()
     const [showDeleteModal, setShowDeleteModal] = useState(false )
-    const [analyticsData, setAnalyticsData] = useState(null);
-    const [showAnalytics, setShowAnalytics] = useState(false);
+    // const [analyticsData, setAnalyticsData] = useState(null);
+    // const [showAnalytics, setShowAnalytics] = useState(false);
     const { 
         data: products = [], 
         isLoading 

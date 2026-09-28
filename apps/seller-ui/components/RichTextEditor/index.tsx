@@ -536,7 +536,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
       (quillRef.current as any).getStats = () => stats;
 
-      (quillRef.current as any).insertText = (text: string, index: number = 0) => {
+      (quillRef.current as any).insertText = (text: string, index = 0) => {
         quillRef.current?.getEditor().insertText(index, text);
       };
 
