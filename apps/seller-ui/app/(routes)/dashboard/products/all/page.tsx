@@ -5,6 +5,8 @@ import {
     useTable,
     createCoreRowModel,
     createFilteredRowModel,
+    coreRowModelsFeature,
+    globalFilteringFeature,
     flexRender,
     filterFn_includesString,
 } from '@tanstack/react-table'
@@ -197,12 +199,14 @@ const ProductPage = () => {
     const table = useTable({
         data: products,
         columns,
-        getCoreRowModel: createCoreRowModel(),
-        getFilteredRowModel: createFilteredRowModel(),
+        rowModelFns: {
+          core: createCoreRowModel(),
+          filtered: createFilteredRowModel(),
+        },
         globalFilterFn: filterFn_includesString,
         state: { globalFilter },
         onGlobalFilterChange: setGlobalFilter
-    })
+    } as any)
     
     const openDeleteModal = (product: any) => {
         setSelectedProduct(product)

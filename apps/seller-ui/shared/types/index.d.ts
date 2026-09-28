@@ -34,6 +34,7 @@ declare interface User {
     taxId?: string | null
     storeDescription?: string | null
     isVerified: boolean
+    stripePayoutsEnabled?: boolean
     shop?: {
       id: string
       name: string

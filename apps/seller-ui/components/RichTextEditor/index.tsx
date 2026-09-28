@@ -594,11 +594,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   // Render
   // ========================================================================
 
+  const ReactQuillAny = ReactQuill as any;
+
   return (
     <div className={containerClasses} style={editorContainerStyle} ref={editorRef}>
       <div style={editorWrapperStyle}>
-        <ReactQuill
-          ref={quillRef as any}
+        <ReactQuillAny
+          ref={quillRef}
           value={editorValue}
           onChange={handleChange}
           onFocus={handleFocus}
