@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "noUnusedLocals": false,
     "jsx": "preserve",
     "noEmit": true,
     "emitDeclarationOnly": false,
@@ -41,6 +43,8 @@
     "assets/**/*.tsx",
     "utils/**/*.ts",
     "utils/**/*.tsx",
+    "configs/**/*.ts",
+    "configs/**/*.tsx",
     "../../apps/seller-ui/.next/types/**/*.ts",
     "../../dist/apps/seller-ui/.next/types/**/*.ts",
     "next-env.d.ts",

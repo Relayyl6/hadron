@@ -365,7 +365,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     if (toolbarPreset === 'custom' && customToolbarConfig) {
       return customToolbarConfig;
     }
-    return TOOLBAR_PRESETS[toolbarPreset] || TOOLBAR_PRESETS.full;
+    return TOOLBAR_PRESETS[toolbarPreset as keyof typeof TOOLBAR_PRESETS] || TOOLBAR_PRESETS.full;
   }, [toolbarPreset, customToolbarConfig]);
 
   // ========================================================================
@@ -598,7 +598,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <div className={containerClasses} style={editorContainerStyle} ref={editorRef}>
       <div style={editorWrapperStyle}>
         <ReactQuill
-          ref={quillRef}
+          ref={quillRef as any}
           value={editorValue}
           onChange={handleChange}
           onFocus={handleFocus}
