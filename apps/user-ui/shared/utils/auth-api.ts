@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/utils/fetch'
-import type { User } from '../../context/user-context'
+
 
 // 1. POST /api/users/auth/login-user
 export async function loginRequest(email: string, password: string): Promise<User> {
