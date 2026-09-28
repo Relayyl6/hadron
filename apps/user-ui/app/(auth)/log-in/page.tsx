@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -27,7 +27,7 @@ import {
   ResetFormValues
 } from '@/shared/utils/lib'
 
-export default function LoginPage() {
+function LoginContent() {
   const { refetch } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -498,5 +498,13 @@ export default function LoginPage() {
 
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 }
