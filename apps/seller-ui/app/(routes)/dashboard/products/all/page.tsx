@@ -3,8 +3,8 @@
 import React, { useMemo, useState } from 'react'
 import {
     useTable,
-    getCoreRowModel,
-    getFilteredRowModel,
+    createCoreRowModel,
+    createFilteredRowModel,
     flexRender,
     filterFn_includesString,
 } from '@tanstack/react-table'
@@ -197,8 +197,8 @@ const ProductPage = () => {
     const table = useTable({
         data: products,
         columns,
-        getCoreRowModel: getCoreRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
+        getCoreRowModel: createCoreRowModel(),
+        getFilteredRowModel: createFilteredRowModel(),
         globalFilterFn: filterFn_includesString,
         state: { globalFilter },
         onGlobalFilterChange: setGlobalFilter
