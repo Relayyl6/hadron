@@ -28,11 +28,16 @@ declare interface User {
     } | null
   } | null
   sellerProfile?: {
+    id: string
     businessName: string
     businessType: "CORPORATION" | "FREELANCER" | "SOLE_PROPRIETOR"
     taxId?: string | null
     storeDescription?: string | null
     isVerified: boolean
+    shop?: {
+      id: string
+      name: string
+    } | null
   } | null
 }
 
