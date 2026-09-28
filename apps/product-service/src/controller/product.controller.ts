@@ -325,7 +325,8 @@ export const getShopProducts = async (
 
     const products = await prisma.products.findMany({
       where: {
-        shopId: shopId
+        shopId: shopId,
+        isDeleted: false
       }
     })
 
