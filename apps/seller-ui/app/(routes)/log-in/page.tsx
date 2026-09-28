@@ -27,7 +27,7 @@ import {
   ResetFormValues
 } from '@/utils/lib'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { refetch } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -514,3 +514,5 @@ export default function LoginPage() {
     </main>
   )
 }
+
+export default function LoginPage() { return <React.Suspense fallback={<div>Loading...</div>}><LoginPageContent /></React.Suspense> }

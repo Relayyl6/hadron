@@ -20,7 +20,7 @@ import { COUNTRIES } from '@/utils/countries';
 
 type SignUpFormValues = z.infer<typeof registrationSchema>;
 
-export default function SignupPage() {
+function SignupPageContent() {
   const { refetch } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1033,3 +1033,5 @@ export default function SignupPage() {
     </main>
   );
 }
+
+export default function SignupPage() { return <React.Suspense fallback={<div>Loading...</div>}><SignupPageContent /></React.Suspense> }
