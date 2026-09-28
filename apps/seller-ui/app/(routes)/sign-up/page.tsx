@@ -1034,4 +1034,10 @@ function SignupPageContent() {
   );
 }
 
-export default function SignupPage() { return <React.Suspense fallback={<div>Loading...</div>}><SignupPageContent /></React.Suspense> }
+export default function SignupPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <SignupPageContent />
+    </React.Suspense>
+  )
+}

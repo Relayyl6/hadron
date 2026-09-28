@@ -515,4 +515,10 @@ function LoginPageContent() {
   )
 }
 
-export default function LoginPage() { return <React.Suspense fallback={<div>Loading...</div>}><LoginPageContent /></React.Suspense> }
+export default function LoginPage() {
+  return (
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </React.Suspense>
+  )
+}
