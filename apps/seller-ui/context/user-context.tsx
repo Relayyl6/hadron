@@ -6,11 +6,18 @@ import axiosInstance from "../utils/axiosInstance";
 
 const UserContext = createContext<UserContextValue | null>(null);
 
-const fetchUserData = async (): Promise<User> => {
-    const response = await axiosInstance.get(
-        "/api/users/auth/get_logged_in_user"
-    );
-    return response.data.user;
+const fetchUserData = async (): Promise<User | null> => {
+    try {
+        const response = await axiosInstance.get(
+            "/api/users/auth/get_logged_in_user"
+        );
+        return response.data.user;
+    } catch (error: any) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            return null;
+        }
+        throw error;
+    }
 };
 
 export function UserProvider({ children }: { children: React.ReactNode }) {

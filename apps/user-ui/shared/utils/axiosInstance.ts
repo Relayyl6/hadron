@@ -6,7 +6,7 @@ interface RetryRequestConfig extends InternalAxiosRequestConfig {
 }
 
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_SERVER_URI,
+    baseURL: typeof window !== 'undefined' ? '' : (process.env.NEXT_PUBLIC_SERVER_URI || 'http://127.0.0.1:4000'),
     withCredentials: true,
 });
 
