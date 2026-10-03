@@ -37,7 +37,7 @@ const HERO_SLIDES = [
     subtitle: "Limited Stock",
     discount: "15% OFF",
     price: "Starting from $85",
-    image: "https://images.unsplash.com/photo-1508656919611-996ae5b70f81?q=80&w=800&auto=format&fit=crop",
+    image: "https://images.unsplash.com/photo-1542496658-e33a6d0d50f6?q=80&w=800&auto=format&fit=crop",
     bgGradient: "from-[#1e293b] to-[#0f172a]",
     glowColor: "bg-indigo-500",
     buttonText: "Grab Yours",

@@ -13,10 +13,9 @@ const fetchUserData = async (): Promise<User | null> => {
         );
         return response.data.user;
     } catch (error: any) {
-        if (error.response?.status === 401 || error.response?.status === 403) {
-            return null;
-        }
-        throw error;
+        // Suppress all errors (including 500s or network failures when backend is down)
+        // so the UI always elegantly falls back to the "Log in" button.
+        return null;
     }
 };
 

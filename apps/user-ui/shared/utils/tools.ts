@@ -1,4 +1,6 @@
 import { DEPARTMENTS_DATA } from "./lib";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export const generateCategoryState = (data: typeof DEPARTMENTS_DATA) => {
   const lookup: Record<string, FlatCategory> = {};
@@ -30,7 +32,9 @@ export const generateCategoryState = (data: typeof DEPARTMENTS_DATA) => {
 // Your globally accessible state lookup map
 export const CATEGORY_STATE_MAP = generateCategoryState(DEPARTMENTS_DATA);
 
-
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 const currentCategory = CATEGORY_STATE_MAP['/categories/fashion/mens/tops/t-shirts'];
 
