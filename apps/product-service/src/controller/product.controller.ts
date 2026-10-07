@@ -452,7 +452,28 @@ export const getAllProducts = async (
       totalSales: "desc" as Prisma.SortOrder
     }
 
+    const [products, total, top10Products] = await Promise.a;;({
+      prisma.product.findMany({
+        skip,
+        take: limit,
+        include: {
+          images: true, Shop: true
+        },
+        where: baseFilter, 
+        orderBy: {
 
+        }
+      })
+    })
+
+    res.status(200).json({
+      products,
+      top10By: type === "latest" ? "latest" : "topSales",
+      top10Products,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total/limit)
+    })
   } catch (error) {
 
   }

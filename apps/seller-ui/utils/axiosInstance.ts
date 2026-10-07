@@ -54,6 +54,12 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryRequestConfig;
 
+    if (error.response?.status === 403 && !originalRequest._retry && (error.response.data as any)?.message?.toLowerCase().includes('csrf')) {
+      originalRequest._retry = true;
+      csrfTokenStr = ''; // Clear stale token
+      return axiosInstance(originalRequest);
+    }
+
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }

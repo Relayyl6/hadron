@@ -15,13 +15,7 @@ async function getCsrfToken(baseUrl: string): Promise<string | null> {
   // 1. Check in-memory cache / active promise
   if (isFetchingCsrf && csrfPromise) return csrfPromise;
 
-  // 2. Check localStorage cache
-  if (typeof window !== 'undefined') {
-    const cachedToken = localStorage.getItem('csrfToken');
-    if (cachedToken) return cachedToken;
-  }
-
-  // 3. Fetch fresh token if not cached
+  // 2. Fetch fresh token if not cached
   isFetchingCsrf = true;
   csrfPromise = fetch(`${baseUrl}/api/users/api/csrf-token?_t=${Date.now()}`, {
     method: 'GET',
@@ -31,9 +25,6 @@ async function getCsrfToken(baseUrl: string): Promise<string | null> {
     .then(res => res.ok ? res.json() : null)
     .then(data => {
       if (data && data.csrfToken) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('csrfToken', data.csrfToken);
-        }
         return data.csrfToken;
       }
       return null;
@@ -139,8 +130,12 @@ export async function apiRequest<T>(
       
       // Handle invalid CSRF token
       if (response.status === 403 && _retryCount === 0 && errorData?.message?.toLowerCase().includes('csrf')) {
+        // Clear memory cache so retry gets a fresh token
+        csrfPromise = null;
+        isFetchingCsrf = false;
+        
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('csrfToken');
+          localStorage.removeItem('csrfToken'); // Clean up any old localStorage
         }
         return apiRequest<T>(endpoint, { method, body, headers, options }, 1);
       }
