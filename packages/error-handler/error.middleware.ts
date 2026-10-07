@@ -73,6 +73,11 @@ const normalizeError = (err: Error): AppError => {
     }
 
 
+    // CSRF errors
+    if ((err as any).code === "EBADCSRFTOKEN" || err.message.toLowerCase().includes("csrf")) {
+        return new AppError("Invalid CSRF token", 403, true);
+    }
+
     // Unknown errors
     return new AppError(
         process.env.NODE_ENV === "development"

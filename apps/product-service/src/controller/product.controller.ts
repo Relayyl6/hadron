@@ -2,6 +2,7 @@ import { NextFunction, Response, Request } from 'express';
 import { prisma } from '@hadron/lib/prisma';
 import { AuthError, NotFoundError, ValidationError } from '@hadron/error-handler';
 import { client } from '@hadron/imagekit';
+import { Prisma } from '@prisma/client';
 
 // get product categories
 export const getCategories = async (
@@ -422,5 +423,37 @@ export const restoreProduct = async (
 
   } catch (error) {
     return next(error)
+  }
+}
+
+// getAllProducts
+export const getAllProducts = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    const type = req.query.type;
+
+    const baseFilter = {
+      OR: [{
+        starting_date: null
+      }, {
+        ending_date: null
+      }]
+    };
+
+    const orderBy: Prisma.productsOrderByWithRelationInput = type === "latest" ? {
+      createdAt: "desc" as Prisma.SortOrder
+    } : {
+      totalSales: "desc" as Prisma.SortOrder
+    }
+
+
+  } catch (error) {
+
   }
 }
